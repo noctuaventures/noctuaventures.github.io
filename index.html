@@ -1,26 +1,2119 @@
 <!doctype html>
-<html lang="en">
+<!--
+      ,___,
+      (o,o)     noctua ventures
+      /)_)      drawn by hand in plain JS; the moon is at tonight's real phase.
+       " "
+      the owl wakes on the third tap
+      the moon answers three knocks
+      hold the tallest tower a little longer
+      stay up until midnight
+
+      agents and other night creatures: there's a plain-text map at /llms.txt
+-->
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <!-- the browser's bars take the sky's top colour (the script keeps it in step with the theme and the hour) -->
+  <meta name="theme-color" content="#090b10">
   <title>noctua ventures llc</title>
-  <link rel="icon" href="favicon.png">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist&display=swap">
+  <meta name="description" content="noctua ventures, founded by dkorac">
+  <link rel="canonical" href="https://www.noctuaventures.com/">
+  <!-- link previews: the moon over the city's lit crown -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="noctua ventures llc">
+  <meta property="og:title" content="noctua ventures llc">
+  <meta property="og:description" content="founded by dkorac">
+  <meta property="og:url" content="https://www.noctuaventures.com/">
+  <meta property="og:image" content="https://www.noctuaventures.com/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="An engraved moon over an isometric night city, its Art Deco crown lit gold.">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- arrival (the end of the script): the page comes up out of the dark, then the city wakes -->
+  <!-- the page starts as night (no day-blue first frame); only a visitor who chose day starts light -->
+  <script>try { if (localStorage.getItem('noctua-time') === 'day') document.documentElement.dataset.theme = 'light'; } catch {}</script>
+  <script>if (!matchMedia('(prefers-reduced-motion: reduce)').matches) { const r = document.documentElement; r.classList.add('arrive'); setTimeout(() => r.classList.remove('arrive'), 4000); }   // never left hidden if the script fails</script>
+  <link rel="icon" href="icon.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-title" content="noctua">
+  <link rel="preload" href="fonts/cormorant-garamond.woff2" as="font" type="font/woff2" crossorigin>
   <style>
-    body { margin: 1.5em; font: 16px/1.6 "Geist", sans-serif; color: #111; background: #fff; }
-    @media (min-width: 800px) { body { margin: 6em; } }
-    a { color: inherit; text-decoration-color: #bbb; text-underline-offset: 3px; }
-    a:hover { text-decoration-color: currentColor; }
-    p:has(+ ul) { margin-bottom: 0; }
-    ul { margin: 0; padding-left: 1.25em; }
+    /* the type is served from this site (SIL Open Font License, see fonts/OFL-*.txt); Latin only, which is all
+       the page sets (the ć is drawn over a c). Cormorant is variable, so one file gives both weights */
+    @font-face { font-family: "Cormorant Garamond"; font-weight: 400 500; font-display: swap; src: url(fonts/cormorant-garamond.woff2) format("woff2"); }
+    @font-face { font-family: "Geist Mono"; font-weight: 400; font-display: swap; src: url(fonts/geist-mono.woff2) format("woff2"); }
+    /* ---- day: the same city as an architect's line drawing ---- */
+    :root {
+      /* one clear watercolour morning: airy blue at the top, near-white at the horizon; the script warms it at
+         sunrise and sunset (--day-*). Every colour of the drawing is mixed from this sky, so the city belongs to it:
+         sunlit faces and roofs take the horizon's colour (peach at golden hour), shaded faces the sky's blue. */
+      --wash-a: var(--day-a, #93c0ea); --wash-b: var(--day-b, #e0edf8); --wash-c: var(--day-c, #f4f7f9); --wash-ink: var(--day-ink, #27313f);
+      --bg: var(--wash-b);
+      --text: var(--wash-ink);
+      --muted: color-mix(in srgb, var(--wash-ink) 62%, var(--wash-b));
+      --ink: rgba(52, 66, 88, .84);
+      --ink-faint: rgba(52, 66, 88, .3);
+      --hatch: rgba(74, 98, 128, .22);
+      --far-o: .45;
+      --ground: color-mix(in srgb, #f1f5f8 80%, var(--wash-c));
+      --street: color-mix(in srgb, #e9eff4 80%, var(--wash-c));
+      --f-l: color-mix(in srgb, #ffffff 72%, var(--wash-b));
+      --f-r: color-mix(in srgb, #d9e3ec 72%, var(--wash-a));
+      --fl-bot: color-mix(in srgb, #fdfdfd 86%, var(--wash-b));
+      --fl-top: color-mix(in srgb, #fbfcfd 68%, var(--wash-b));
+      --fr-bot: color-mix(in srgb, #dfe7ee 76%, var(--wash-b));
+      --fr-top: color-mix(in srgb, #d5e0ea 70%, var(--wash-a));
+      --fr-paint: url(#hatch);
+      --roof: color-mix(in srgb, #ffffff 76%, var(--wash-b));
+      --roof-far: color-mix(in srgb, var(--roof) 60%, var(--wash-b));
+      --veil: var(--wash-b);
+      --crown-ink: #8a6430;
+      --crown-ink-o: .38;
+      --edge: transparent;
+      --spill-o: 0;
+      --win: transparent;
+      --win-l: rgba(168, 198, 226, .34);
+      --win-r: rgba(150, 182, 212, .34);
+      --win-stroke: rgba(84, 118, 156, .4);
+      --stone: color-mix(in srgb, #ffffff 80%, var(--wash-a));
+      --copper: color-mix(in srgb, #9ccdb8 80%, var(--wash-a));   /* verdigris */
+      --amber: #b9792a;
+      --amber-hi: #d49a48;
+      --l-warm: transparent;
+      --l-warm-o: 0;
+      --l-cool: transparent;
+      --l-cool2: transparent;
+      --l-shop: transparent;
+      --l-lamp: #34445a;
+      --lk-d: none;
+      --crown-l: #f5e5bc;
+      --crown-r: #ead7a6;
+      --crown-glow: 0;
+      --night-d: none;
+      --day-d: inline;
+      --dot-o: 0;
+      --xstar-o: 0;
+      --lift: rgba(255, 255, 255, 0);
+      --shade: rgba(0, 0, 0, 0);
+      /* watercolour mottling: one small turbulence tile, multiplied over the wash at low strength */
+      --paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='720'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.0032' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .56 0 0 0 0 .62 0 0 0 .2 -.04'/%3E%3C/filter%3E%3Crect width='720' height='720' filter='url(%23f)'/%3E%3C/svg%3E");
+      --ink-fine: rgba(52, 66, 88, .34);
+      --cast: rgba(70, 95, 130, .14);
+      --flag: #e6edf3;
+      --steam: rgba(52, 66, 88, .45);
+      --steam-o: .7;
+      --mark-eye: #fbfdff;
+      --mark-iris: #d9962e;
+      --hero-pen: 1;
+      color-scheme: light;
+    }
+    /* ---- night: deep ink (the script sets data-theme for auto too) ---- */
+    :root:is([data-theme="dark"], [data-theme="dusk"], [data-theme="dawn"]) {
+      --wash-a: #090b10; --wash-b: #090b10; --wash-c: #090b10;
+      --bg: #090b10;
+      --text: #e2dccb;
+      --muted: #9a9a94;
+      --ink: #3b4458;
+      --ink-faint: rgba(70, 80, 100, .3);
+      --hatch: rgba(86, 96, 116, .3);
+      --ground: #0e1118;
+      --street: #0b0e14;
+      --f-l: #141a26;
+      --f-r: #0b0d13;
+      --roof: #161d2d;
+      --roof-far: #121826;
+      --veil: #252b38;      /* the air at the horizon: the sky's own moonlit tone, so the far city sinks into it */
+      --crown-ink: #5a3a0c;
+      --crown-ink-o: .62;
+      --edge: rgba(170, 182, 208, .5);
+      --spill-o: 1;
+      --win: #0b0e14;
+      --stone: #10141c;
+      --copper: #18291f;
+      --amber: #ffad42;
+      --amber-hi: #ffd890;
+      --l-warm: #ffb347;
+      --l-warm-o: 1;
+      --l-cool: #c3d2ea;
+      --l-cool2: #e9d9a6;
+      --l-shop: #ffcf7a;
+      --l-lamp: #ffd68a;
+      --crown-glow: 1;
+      --win-stroke: none;
+      --lk-d: inline;
+      --crown-l: url(#flood);
+      --crown-r: url(#flood-r);
+      --fl-bot: #2a2531;
+      --fl-top: #131a28;
+      --fr-bot: #17141c;
+      --fr-top: #080b11;
+      --fr-paint: url(#face-r);
+      --win-l: rgba(4, 6, 11, .55);
+      --win-r: rgba(0, 0, 0, .4);
+      --night-d: inline;
+      --day-d: none;
+      --dot-o: 1;
+      --xstar-o: .75;
+      --lift: rgba(44, 58, 86, .42);
+      --shade: rgba(0, 0, 0, .55);
+      --paper: none;
+      --ink-fine: rgba(92, 104, 130, .42);
+      --cast: rgba(0, 0, 0, .38);
+      --flag: #1a2130;
+      --steam: rgba(178, 188, 208, .5);
+      --steam-o: .55;
+      --mark-eye: var(--bg);
+      --mark-iris: #f2b45c;
+      --hero-pen: .8;
+      color-scheme: dark;
+    }
+
+    /* ---- dusk and sunrise: the night itself, the same drawing and lights, under a differently coloured sky
+       that warms toward the skyline; the moon is already up at dusk, the sun rises in its place at sunrise ---- */
+    :root[data-theme="dusk"] {
+      --wash-a: #0d122c; --wash-b: #1a1626; --wash-c: #0b0d14; --bg: #0d0f19;
+      --lift: rgba(190, 120, 120, .16); --veil: #6a4048;
+      --glow-lo: #c9774e; --glow-mid: #6a3f5a; --bird: #a99aa6;
+    }
+    :root[data-theme="dawn"] {
+      --wash-a: #141a3c; --wash-b: #2a1e30; --wash-c: #0c0e16; --bg: #12131f;
+      --lift: rgba(214, 130, 160, .18); --veil: #7a4e58;
+      --glow-lo: #f39a68; --glow-mid: #b4587a; --bird: #b3a8b2;
+    }
+    /* the stars come out as the glow fades (--glow-t, 1 at its warmest, from the script) */
+    :root:is([data-theme="dusk"], [data-theme="dawn"]) :is(#sky, #float) { --u: calc(1 - var(--glow-t, 1)); --sky-star-o1: calc(.4 * var(--u)); --sky-star-o2: calc(.08 + .6 * var(--u)); --sky-star-o3: calc(.25 + .65 * var(--u)); --sky-star-o4: calc(.45 + .55 * var(--u)); --sky-star-glow-o: calc(.1 + .4 * var(--u)); --sky-tw-hi: calc(.35 + .65 * var(--u)); --sky-tw-lo: .08; --sky-mw-o: calc(.3 * var(--u)); --sky-wash-o: 0; --xstar-o: calc(.12 + .6 * var(--u)); --star-lo: calc(1 - .9 * var(--glow-t, 1)); }
+    /* and they thin toward the skyline (the mask's lower stop reads --star-lo): into the glow at dusk and sunrise,
+       and at night into the city's own haze, so the stars and the far rooftops meet without a seam */
+    :root:not([data-theme="light"]) #sky :is(.stars, .xstars) { mask: url(#star-fade); }
+    :root[data-theme="dark"] :is(#sky, #float) { --star-lo: .35; }
+    :root:not([data-theme="light"]) { --veil-o: .78; }
+    #sky .city-air { display: var(--night-d); }
+    :root:is([data-theme="dusk"], [data-theme="dawn"]) #sky .city-air { display: none; }
+    /* the afterglow: the sky deepening from its top to a warm skyline (--hy, from the script). On desktop it sits
+       behind the drawing and dissolves into the text side as the city does; on phones it spans the page */
+    :root:is([data-theme="dusk"], [data-theme="dawn"]) { --afterglow: linear-gradient(to bottom, color-mix(in srgb, var(--glow-mid) 6%, transparent) 0, color-mix(in srgb, var(--glow-mid) calc(32% * var(--glow-k, 1) * var(--glow-t, 1)), transparent) calc(var(--hy, 20vh) * .5), color-mix(in srgb, var(--glow-lo) calc(62% * var(--glow-k, 1) * var(--glow-t, 1)), transparent) calc(var(--hy, 20vh) + var(--glow-peak, 50px)), transparent calc(var(--hy, 20vh) + var(--glow-tail, 30vh))); }
+    .stage::before { content: ""; position: absolute; inset: 0; background: var(--afterglow, none); pointer-events: none;
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 100%); mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 100%); }
+    :root[data-theme="dawn"] .sky-sun { --sky-sun-hi: #ffe8c8; --sky-sun-lo: #f49a62; --sky-sun-ink: #95561c; --sky-sun-limb: #84481a; --sky-sun-ray: #f4b673; }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    html { background: var(--wash-a); }   /* overscroll shows sky, not a mismatched colour */
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background-color: var(--wash-a);   /* iOS paints the status bar in this colour: the sky's top */
+      color: var(--text);
+      font: 15px/1.6 "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+      background-image:
+        var(--paper),
+        var(--afterglow-page, linear-gradient(transparent, transparent)),
+        radial-gradient(120% 90% at var(--lift-at, 66% 12%), var(--lift) 0%, transparent 60%),
+        radial-gradient(140% 110% at 50% 50%, transparent 52%, var(--shade) 100%),
+        linear-gradient(to bottom, var(--wash-a) 0%, var(--wash-b) var(--wash-mid, 36%), var(--wash-c) 100%);
+      background-size: 720px 720px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+      background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+      background-blend-mode: multiply, normal, normal, normal, normal;
+      background-attachment: fixed;
+      transition: background-color .6s ease, color .6s ease;
+      overflow-x: hidden;
+    }
+    :root.switching * { transition: none !important; }
+    a {
+      color: inherit;
+      text-decoration: underline 1px color-mix(in srgb, currentColor 28%, transparent);
+      text-underline-offset: .18em;
+      transition: color .45s, text-shadow .45s, text-decoration-color .45s;
+    }
+    a:hover, a:focus-visible { text-decoration-color: currentColor; }
+    :where(a, button):focus-visible { outline: 1px solid var(--amber); outline-offset: 6px; border-radius: 2px; }
+
+    /* desktop: the page splits in two. Text in the left column, the drawing filling the right half, full height,
+       sky from the top edge, bleeding off the right and dissolving at its foot and into the text side. */
+    .frame { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-rows: 1fr; position: relative; }
+    footer { position: absolute; left: 32px; right: 32px; bottom: 24px; z-index: 3; display: flex; justify-content: space-between; align-items: center; color: var(--muted); font: 11px/1.4 "Geist Mono", ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; }
+    main { display: grid; grid-template-columns: 42fr 58fr; align-items: center; min-height: 100dvh; }
+    /* one title size, --t, and everything in the block derives from it, so the hierarchy holds on every screen */
+    .copy { --t: clamp(36px, 3.9vw, 62px); padding: 0 24px 0 clamp(32px, 7vw, 140px); position: relative; z-index: 2; }
+    /* the title, signed with the owl */
+    .title { display: flex; align-items: center; gap: .32em; font-size: var(--t); }
+    .copy h1 {
+      margin: 0;
+      font-weight: 500;
+      font-size: 1em;
+      line-height: 1.06;
+      letter-spacing: -.005em;
+      white-space: nowrap;
+    }
+    .copy h1 .by { display: block; margin-top: .14em; font-size: .6em; font-weight: 400; color: color-mix(in srgb, var(--text) 82%, var(--bg)); }
+    .copy h1 a { text-decoration: underline 1px; text-underline-offset: .2em; text-decoration-color: color-mix(in srgb, currentColor 32%, transparent); transition: text-decoration-color .3s; }
+    .copy h1 a:hover, .copy h1 a:focus-visible { text-decoration-color: currentColor; }
+    svg.mark { height: 1.75em; width: auto; flex: none; overflow: visible; }
+    svg.mark .ink-night { display: var(--night-d); }
+    svg.mark .ink-day { display: var(--day-d); }
+    svg.mark .disc { fill: var(--mark-eye); }
+    svg.mark .iris { fill: var(--mark-iris); transform-box: fill-box; transform-origin: center; transition: transform .12s; }
+    svg.mark.blink .iris { transform: scaleY(.08); }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    /* an acute drawn the way Serbian Latin sets it: steeper and longer than the font's */
+    .cacute { position: relative; }
+    .cacute::after { content: ""; position: absolute; left: .19em; top: .4em; width: .27em; height: .06em; background: currentColor; border-radius: .03em; transform: rotate(-38deg); transform-origin: left center; }
+    .building { margin-top: calc(var(--t) * .58); font-size: calc(var(--t) * .42); }
+    .building .label { margin: 0 0 .1em; font-size: 1em; color: color-mix(in srgb, var(--text) 72%, var(--bg)); }
+    .copy ul { list-style: none; margin: 0; padding: 0; }
+    .copy li { display: flex; align-items: center; gap: .5em; font-size: 1em; font-weight: 500; line-height: 1.3; }
+    .copy li a { text-underline-offset: .2em; text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); }
+    .bullet { width: .72em; height: .72em; flex: none; color: var(--amber); transition: color .45s; }
+    .copy li:has(a.lit) .bullet { color: var(--amber-hi); }
+    a.project.lit { color: var(--amber); text-shadow: 0 0 14px color-mix(in srgb, var(--amber) 45%, transparent); }
+
+    /* ---- the drawing: no frame, its edges melt into the page ---- */
+    /* on desktop the three layers share one wide viewBox and cover the column (slice), so nothing distorts */
+    .stage { position: relative; min-height: 100dvh; min-width: 0; }
+    .art { position: absolute; inset: 0; touch-action: manipulation; -webkit-touch-callout: none; user-select: none; }
+    .art svg { display: block; position: absolute; inset: 0; width: 100%; height: 100%; -webkit-tap-highlight-color: transparent; }
+    #sky, #float, #float-sky { z-index: 0;
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 100%);
+      mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 100%);
+    }
+    /* the city dissolves into the text side and at its foot, never at the top (the moon's limb sits there) */
+    #scene, #float-top { z-index: 1;
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 100%), linear-gradient(to bottom, #000 0, #000 78%, transparent 100%);
+      -webkit-mask-composite: source-in;
+      mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 100%), linear-gradient(to bottom, #000 0, #000 78%, transparent 100%);
+      mask-composite: intersect;
+    }
+    #float-sky { z-index: 1; }   /* the moon and sun, in front of the hazy far city */
+    #fx { z-index: 2; pointer-events: none; overflow: visible; }
+    /* three separate layers: the city (thousands of shapes) is painted once and only repainted when a light in it
+       changes; the small things that move live in the sky and in #fx */
+    #sky, #scene, #fx { will-change: transform; }
+    /* glass: everything that moves is a small drawing of its own in a layer over the still ones, so the phone's
+       compositor moves and fades it without repainting the sky or the city. Each layer carries the drawing's
+       coordinates (the script sets .vb's transform), so a glass piece is placed in drawing units */
+    .float { position: absolute; inset: 0; pointer-events: none; }
+    .float .vb { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+    .art .vb svg { inset: auto; overflow: visible; }
+    #float .tw { animation: tw var(--d, 6s) ease-in-out var(--delay, 0s) infinite; will-change: opacity; }
+    @keyframes tw { 0%, 100% { opacity: 1; } 45% { opacity: .28; } 60% { opacity: .64; } }
+    #float .tw-stars { display: var(--night-d); }
+    .float .beacon { display: var(--night-d); fill: var(--amber-hi); will-change: opacity; animation: beacon 5s ease-in-out infinite; animation-delay: var(--delay, 0s); }
+    /* when everything fits on the screen, the page doesn't scroll or bounce (the script sets .fits) */
+    :root.fits, :root.fits body { overflow: hidden; overscroll-behavior: none; }
+    :root.still :is(#sky, #scene, #fx, .float) * { animation-play-state: paused !important; }
+    .world { position: absolute; inset: 0; }
+
+    button.theme { font: 12px/1.4 "Geist Mono", ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--text); background: transparent; border: 1px solid color-mix(in srgb, var(--text) 25%, transparent); border-radius: 999px; padding: 5px 12px; cursor: pointer; transition: background-color .3s, border-color .3s; }
+    button.theme:hover { background: color-mix(in srgb, var(--text) 7%, transparent); border-color: color-mix(in srgb, var(--text) 50%, transparent); }
+    button.theme:focus-visible { border-radius: 999px; outline-offset: 3px; }
+    /* a change of time cross-fades the whole page: slowly when the clock moves it, briefly when it is chosen */
+    ::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--vt, 1.8s); animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+    /* the time of day: the pill opens a small menu above it */
+    .when { position: relative; }
+    .when-menu { position: absolute; right: 0; bottom: calc(100% + 10px); min-width: 208px; padding: 6px; display: grid; gap: 1px;
+      background: color-mix(in srgb, var(--bg) 80%, transparent); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+      border: 1px solid color-mix(in srgb, var(--text) 16%, transparent); border-radius: 14px; box-shadow: 0 14px 34px -14px rgba(0, 0, 0, .45);
+      animation: when-in .18s ease-out; }
+    .when-menu[hidden] { display: none; }
+    @keyframes when-in { from { opacity: 0; transform: translateY(4px); } }
+    .when-menu button { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 9px; font: 11px/1.4 "Geist Mono", ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); cursor: pointer; }
+    .when-menu button:is(:hover, :focus-visible) { color: var(--text); background: color-mix(in srgb, var(--text) 8%, transparent); }
+    .when-menu button[aria-checked="true"] { color: var(--text); }
+    .when-menu button[aria-checked="true"]::after { content: ""; margin-left: auto; width: 5px; height: 5px; border-radius: 50%; background: var(--amber); }
+    .when-menu .g { width: 1.1em; text-align: center; }
+    .when-menu small { white-space: nowrap; font-size: 10px; letter-spacing: .08em; text-transform: none; opacity: .7; }
+    .when-menu hr { border: 0; border-top: 1px solid color-mix(in srgb, var(--text) 12%, transparent); margin: 4px 8px; }
+
+    /* ---- engraving ---- */
+    :where(#scene, #fx) :where(path, line, ellipse, polygon) { stroke: var(--ink); stroke-width: .8; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+    svg .f-top { fill: var(--roof); }
+    svg .f-l { fill: url(#face-l); }
+    svg .f-r, svg .hatch { fill: var(--fr-paint); }
+    svg .win-l { fill: var(--win-l); stroke: var(--win-stroke); stroke-width: .4; }
+    svg .win-r { fill: var(--win-r); stroke: var(--win-stroke); stroke-width: .4; }
+    svg .band { stroke: var(--ink); stroke-width: .7; }
+    svg .lampdots { display: var(--night-d); fill: var(--l-lamp); stroke: none; opacity: var(--dot-o); }
+    #sky .xstars path { fill: none; stroke: var(--sky-star, #d3d9e6); stroke-width: 1.1; stroke-linecap: round; opacity: var(--xstar-o); vector-effect: non-scaling-stroke; }
+    :is(#sky, #float) .xstar { fill: var(--sky-star, #d3d9e6); opacity: var(--xstar-o); }
+    /* a clear sky by day; the stars only at night */
+    #sky :where(.sky-star, .sky-mw, .sky-mw-wash, .sky-tw, .xstars) { display: var(--night-d); }
+    #sky .sky-glyph { display: none; }
+    .sky-sun-glow { display: none; }
+    .sky-sun { --sky-sun-hi: #fff8dc; --sky-sun-lo: #f8c650; --sky-sun-ink: #a0661e; --sky-sun-limb: #8a5418; --sky-sun-ray: #c8802a; --sky-sun-ray-o: .72; --sky-sun-corona-o: .55; }
+    /* by day, soft clouds drift on the wind and their shadows slide over the rooftops (the script places them) */
+    .float :is(.clouds, .shades) { display: var(--day-d); }
+    :is(#sky, #float) .cloud-ink { fill: rgba(52, 66, 88, .32); }
+    :is(#sky, #float) .cloud-fill { fill: color-mix(in srgb, #fff 80%, var(--wash-b)); }
+    :is(#sky, #float) .cloud-belly { fill: color-mix(in srgb, var(--wash-a) 26%, #f1f2f8); }
+    .float .perched :where(ellipse, circle) { fill: var(--bird, var(--ink)); stroke: none; }
+    :root[data-theme="dark"] .float .pigeons { display: none; }
+    #sky .sunwash { display: var(--day-d); }
+    :is(#sky, #float) .plane { display: var(--night-d); }
+    :is(#sky, #float) .plane-w { fill: #f4f1e8; opacity: .8; }
+    :is(#sky, #float) .plane-r { fill: #ff5a48; animation: plane-r 1.8s steps(1, end) infinite; }
+    @keyframes plane-r { 0%, 12% { opacity: .95; } 13%, 100% { opacity: 0; } }
+    #sky .meteor { fill: none; stroke-width: .8; stroke-linecap: round; }
+    :is(#sky, #fx, .float) .bird { fill: none; stroke: var(--bird, var(--ink)); stroke-width: .85; stroke-linecap: round; stroke-linejoin: round; transform-box: fill-box; transform-origin: 50% 100%; animation: wing 1.2s ease-in-out infinite alternate; }
+    @keyframes wing { from { transform: scaleY(1); } to { transform: scaleY(-.35); } }
+    svg .gnd { fill: var(--ground); stroke: var(--ink-faint); }
+    svg .street { fill: var(--street); stroke: none; }
+    svg .faint { stroke: var(--ink-faint); stroke-width: .5; fill: none; }
+    svg .nofill { fill: none; }
+    svg .win { fill: var(--win); stroke: var(--win-stroke, var(--ink-faint)); stroke-width: .4; }
+    svg .stone { fill: var(--stone); }
+    svg .copper { fill: var(--copper); transition: fill .9s; }
+    svg .far :where(path) { stroke-width: .6; stroke-opacity: var(--far-o); }
+    /* fine detail: cornice fillets, copings, friezes, spandrels, door frames */
+    svg .fine { fill: none; stroke: var(--ink-fine); stroke-width: .5; }
+    svg .cast { fill: var(--cast); stroke: none; }
+    svg .mast { stroke-width: .6; }
+    svg .flag { fill: var(--flag); stroke: var(--ink); stroke-width: .5; }
+    svg .lk-lobby { fill: var(--l-shop); opacity: 0; }
+    /* each window's own warmth and brightness */
+    svg .lk-warm.t1 { fill: #f5c46f; opacity: .92; }
+    svg .lk-warm.t2 { fill: #ffdcab; opacity: .88; }
+    svg .lk-warm.t3 { fill: #dfe5ee; opacity: .8; }
+    svg .lk-cool2.t1 { fill: #f4e3b8; opacity: .8; }
+    svg .lk-cool2.t2 { fill: #d8dee8; opacity: .78; }
+    svg .lk-cool2.t3 { fill: #f0c886; opacity: .82; }
+    svg .lk-cool.t1, svg .lk-cooldim.t1 { fill: #d5deec; }
+    svg .lk-cool.t2, svg .lk-cooldim.t2 { fill: #ebe1c6; }
+    svg .lk-cool.t3, svg .lk-cooldim.t3 { fill: #b3c4e0; }
+    svg .dimmer { fill: var(--bg); stroke: none !important; display: var(--night-d); pointer-events: none; }
+    svg .flick { fill: #fff2d4; stroke: none !important; display: var(--night-d); pointer-events: none; opacity: 0; }
+    svg .flick.tv { fill: #d6e2ff; }
+    svg .steam { fill: none; stroke: var(--steam); stroke-width: .7; vector-effect: non-scaling-stroke; opacity: 0; transform-box: fill-box; transform-origin: 50% 100%; animation: steam 9s linear infinite; }
+    @keyframes steam {
+      0% { opacity: 0; transform: translateY(2px) scale(.55, .5); }
+      18% { opacity: var(--steam-o); }
+      70% { opacity: calc(var(--steam-o) * .5); }
+      100% { opacity: 0; transform: translateY(-9px) scale(1.25, 1.1); }
+    }
+    svg .streetline { display: var(--day-d); fill: none; stroke: var(--ink-faint); stroke-width: .45; stroke-dasharray: 2.4 3.2; opacity: .8; }
+
+    /* lights, by kind */
+    svg .lk { stroke: none !important; display: var(--lk-d); }
+    svg .lk-warm { fill: var(--l-warm); opacity: var(--l-warm-o); }
+    svg .lk-cool { fill: var(--l-cool); }
+    svg .lk-cooldim { fill: var(--l-cool); opacity: .62; }
+    svg .lk-cool2 { fill: var(--l-cool2); opacity: .85; }
+    svg .lk-shop { fill: var(--l-shop); }
+    svg .lk-beacon { fill: var(--l-lamp); }
+    svg [data-toggle], svg [data-b] { cursor: pointer; }
+    svg .hit { fill: transparent; stroke: none !important; pointer-events: all; }
+
+    /* the hero's crown */
+    svg .crown.cl { fill: var(--f-l); transition: fill .6s; }
+    svg .crown.cr { fill: var(--fr-paint); transition: fill .6s; }
+    svg .on .crown.cl { fill: var(--crown-l); }
+    svg .on .crown.cr { fill: var(--crown-r); }
+    #fx .crownglow { stroke: none; opacity: 0; transition: opacity .9s; pointer-events: none; }
+    #fx .crownglow.on { opacity: var(--crown-glow); }
+    /* the crown is engraved in the moon's language: chevrons and string courses in dark amber, and stipple
+       shading that darkens toward the top of each tier (the floodlights sit on the setbacks and point up) */
+    svg .crown-ink path { stroke: var(--ink-fine); transition: stroke .6s, stroke-opacity .6s; }
+    svg .on .crown-ink path { stroke: var(--crown-ink); stroke-opacity: var(--crown-ink-o); }
+    svg .crown-stip { fill: none; stroke: var(--crown-ink); stroke-width: .5; stroke-linecap: round; opacity: 0; transition: opacity .6s; }
+    svg .on .crown-stip { opacity: var(--crown-ink-o); }
+    svg .on .lantern { stroke: var(--amber-hi); }
+    /* the crown's light falls on the hero's own upper shaft and setback tops */
+    svg .spill { stroke: none !important; opacity: 0; transition: opacity .9s; pointer-events: none; }
+    svg .on .spill { opacity: var(--spill-o); }
+    /* moonlight catches the hero's outer edge; the far city sinks into a veil of air */
+    svg .edge { fill: none; stroke: var(--edge); stroke-width: .6; }
+    svg .veil { stroke: none; pointer-events: none; }
+    svg .far .f-top { fill: var(--roof-far); }
+    /* the observatory ring under the crown; the founder's window (an easter egg, see the script) */
+    svg .lk-ring { fill: #f1dfb4; opacity: .5; }
+    svg .lk-founder { fill: #ffc062; opacity: 0; transition: opacity .9s, fill .5s; }
+    svg .lk-founder.on { opacity: .92; }
+    svg .lk-founder.hi { fill: #ffe2a8; opacity: 1; }
+    /* easter eggs on the buildings: a cascade's warm windows, the Chrysler's sunburst, the Woolworth's top */
+    svg .lk-cascade, svg .lk-sunburst { fill: #ffd27a; opacity: 0; transition: opacity .2s; }
+    svg .lk-cascade.lit, svg .lk-sunburst.lit { opacity: 1; }
+    svg .lk-sunburst { transition: opacity .25s, fill .25s; }
+    svg .lk-sunburst.off { transition: opacity .9s; }
+    svg .lk-cascade.lit.soft { opacity: .7; }
+    svg .glow-top .copper { fill: #4a4428; }
+    /* the city wave (easter egg): every window warms in a ring from the hero, then settles back from the edges */
+    svg .win-l, svg .win-r { transition: fill .35s ease; }
+    svg .lk { transition: opacity .8s ease; }
+    #scene.wave .win-l, #scene.wave .win-r { fill: var(--wt); transition: fill 1s ease; transition-delay: calc(var(--d, 0s) * 2.2); }
+    #scene.wave.from-moon .win-l, #scene.wave.from-moon .win-r { transition-delay: calc(var(--dm, 0s) * 2.2); }
+    #scene.wave.dark .win-l { fill: var(--win-l); transition: fill 1.6s ease; transition-delay: calc(var(--db, 0s) * 2.2); }
+    #scene.wave.dark .win-r { fill: var(--win-r); transition: fill 1.6s ease; transition-delay: calc(var(--db, 0s) * 2.2); }
+    #scene.wave.dark :where(.lk:not(.lk-founder), .lampdots) { opacity: 0 !important; transition: opacity 1.6s ease; transition-delay: calc(var(--db, 0s) * 2.2); }
+    #scene.reset :where(.lk, .lampdots) { transition: opacity 1.4s ease; transition-delay: calc(var(--d, 0s) * 1.3); }
+    #scene.breathe { animation: breathe 2s ease-in-out 2; }   /* the whole layer pulses: no repaint */
+    /* phones: each ring of lights snaps on (or off) at once, a handful of redraws instead of one per frame */
+    :root.lite :is(#scene.wave, #scene.reset) :where(.win-l, .win-r, .lk, .lampdots) { transition-duration: 0s !important; }
+    #fx .moonhit { fill: transparent; stroke: none !important; pointer-events: all; }
+    @keyframes breathe { 0%, 100% { opacity: .85; } 50% { opacity: 1; } }
+    /* by day the hero is drawn with a heavier pen than its neighbours, and the rest of the city is drawn less:
+       far and small buildings are silhouettes, mid buildings keep their windows, only the near ones and the
+       landmarks keep floor lines, spandrels and rooftop clutter (data-detail is set once at build) */
+    svg .hero :where(.f-l, .f-r, .f-top, .stone, .crown) { stroke-width: var(--hero-pen, .8); }
+    svg .hero :where(path) { stroke-opacity: 1; }
+    svg [data-detail="0"] :where(.faint, .fine, .band, .cast, .win-l, .win-r, .bulk, .streetline) { display: var(--night-d); }
+    svg [data-detail="1"] :where(.faint, .fine, .band, .bulk) { display: var(--night-d); }
+    #fx .beacon-ring { display: var(--night-d); fill: none; stroke: var(--amber); stroke-width: .5; opacity: .35; }
+    @keyframes beacon { 0%, 100% { opacity: .15; } 50% { opacity: .9; } }
+    /* arrival: the words settle and the drawing comes up out of the dark, already lit: one fade of three
+       ready-drawn layers, nothing inside the city moves */
+    :where(.copy > *, .art, footer) { transition: opacity 1.2s ease, transform 1.4s cubic-bezier(.2, .7, .2, 1); }
+    .art { transition-duration: 1.6s; }
+    .copy > * { transition-delay: .35s; }
+    .copy > .building { transition-delay: .5s; }
+    footer { transition-delay: .8s; }
+    :root.arrive :where(.copy > *, .art, footer) { opacity: 0; }
+    :root.arrive .copy > * { transform: translateY(8px); }
+
+    @media (max-width: 900px) {
+      .frame { grid-template-rows: 1fr auto; padding: 24px 32px; gap: 8px; }
+      main { grid-template-columns: minmax(0, 1fr); gap: 20px; align-content: center; min-height: 0; }
+      .copy { --t: 31px; order: 2; align-self: start; padding: 0 0 8px; justify-self: center; }
+      .title { gap: .3em; }
+      /* phones: no company line; the theme switch sits quietly at the very bottom */
+      footer { position: static; justify-content: center; padding-bottom: env(safe-area-inset-bottom, 0px); }
+      footer > span { display: none; }
+      button.theme { font-size: 11px; color: var(--muted); border-color: transparent; background: transparent; min-height: 44px; padding: 0 14px; }
+      button.theme:hover { color: var(--text); background: transparent; border-color: transparent; }
+      .when-menu { right: auto; left: 50%; translate: -50% 0; bottom: 100%; }
+      /* the sky is short here: it reaches its pale horizon at the skyline, and the afterglow spans the page */
+      :root { --lift-at: 24% 10%; --glow-k: .7; --glow-peak: 0px; --glow-tail: 40px; --wash-mid: calc(var(--hy, 16vh) + 40px); --afterglow-page: var(--afterglow, linear-gradient(transparent, transparent)); }
+      .stage::before { display: none; }
+      .stage { order: 1; margin: 0 -32px; min-height: 0; display: flex; justify-content: center; }
+      .art { position: relative; inset: auto; width: min(100%, 640px, calc(62dvh * var(--ar, 1))); }
+      .world { position: relative; inset: auto; }
+      #scene { position: relative; height: auto; }
+      /* the sky layer reaches T = 160 units above the drawing (frame() in the script): past the calm top margin and
+         under the phone's status bar, so the stars never end at an edge */
+      #sky, #float, #float-sky { top: -24.62%; height: 124.62%;
+        -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 90%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 9%, #000 100%);
+        -webkit-mask-composite: source-in;
+        mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 90%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 9%, #000 100%);
+        mask-composite: intersect;
+      }
+      #scene, #float-top {
+        -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 90%, transparent 100%), linear-gradient(to bottom, #000 0, #000 80%, transparent 100%);
+        mask-image: linear-gradient(to right, transparent 0, #000 12%, #000 90%, transparent 100%), linear-gradient(to bottom, #000 0, #000 80%, transparent 100%);
+      }
+    }
+    @media (max-width: 760px) {
+      /* a modest top margin; the title sits close under the city, as part of the picture */
+      .frame { padding: calc(env(safe-area-inset-top, 0px) + 28px) 16px 0; gap: 0; }
+      main { align-content: start; gap: 0; }
+      .copy { padding-bottom: 0; margin-top: -4px; }
+      .stage { margin: 0 -16px; }
+      .art { width: min(100%, calc((100dvh - 272px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * var(--ar, 1))); }
+      /* nothing fixed at the top: iOS Safari takes a fixed strip there for a header and paints the status bar flat */
+      /* the sky is the whole width of the phone and runs up to the top edge; only the city dissolves at its sides */
+      #sky, #float, #float-sky {
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 5%, #000 100%);
+        mask-image: linear-gradient(to bottom, transparent 0, #000 5%, #000 100%);
+      }
+      #scene, #float-top {
+        -webkit-mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%), linear-gradient(to bottom, #000 0, #000 85%, transparent 99%);
+        mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%), linear-gradient(to bottom, #000 0, #000 85%, transparent 99%);
+      }
+      .copy { --t: clamp(34px, 11vw, 46px); }
+      svg .faint { opacity: .5; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .float .beacon { animation: none; opacity: .8; }
+      #float .tw { animation: none !important; }
+      * { transition-duration: .01s !important; }
+      svg .steam { animation: none; display: none; }
+      :is(#sky, .float) .flourish { display: none; }
+    }
   </style>
 </head>
 <body>
-  <p>noctua ventures llc<br>
-  founded by <a href="https://dkorac.com">dkorac</a></p>
-  <p>selected projects:</p>
-  <ul>
-    <li><a href="https://tryhoming.com">tryhoming.com</a></li>
-  </ul>
+  <div class="frame">
+    <main>
+      <section class="copy">
+        <div class="title">
+          <svg class="mark" id="mark" viewBox="31 2 118 176" aria-hidden="true"></svg>
+          <h1>noctua ventures,<br><span class="by">founded by <a href="https://dkorac.com"><span aria-hidden="true">dkora<span class="cacute">c</span></span><span class="sr">dkorać</span></a></span></h1>
+        </div>
+        <div class="building">
+          <p class="label">currently building:</p>
+          <ul>
+            <li><svg class="bullet" viewBox="0 0 20 20" aria-hidden="true"><path d="M2.6 9.4 17.4 3.2 13 16.8l-3.1-5.6Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M9.9 11.2 17.4 3.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><a class="project" data-light="TAG" href="https://tryhoming.com">homing</a></li>
+          </ul>
+        </div>
+      </section>
+
+      <div class="stage">
+        <div class="art">
+          <div class="world">
+            <svg id="sky" aria-hidden="true"></svg>
+            <div class="float" id="float" aria-hidden="true"><div class="vb"><div class="tw-stars"></div><div class="clouds"></div><div class="fliers"></div></div></div>
+            <svg id="scene" role="img" aria-label="An engraved isometric city of Art Deco towers under the moon and stars, its windows lit for the night."></svg>
+            <div class="float" id="float-sky" aria-hidden="true"><div class="vb"><div class="bodies"></div></div></div>
+            <div class="float" id="float-top" aria-hidden="true"><div class="vb"><div class="lights"></div><div class="shades"></div><div class="beacons"></div><div class="steam-l"></div><div class="pigeons"></div></div></div>
+          </div>
+          <svg id="fx" aria-hidden="true"></svg>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <span>noctua ventures llc</span>
+      <div class="when">
+        <button class="theme" id="theme" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="when">☾ night</button>
+        <div class="when-menu" id="when" role="menu" aria-label="Time of day" hidden></div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- the city's parts; each one is optional -->
+  <script src="city/landmarks.js"></script>
+  <script src="city/sky.js"></script>
+
+<script>
+(() => {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const narrow = innerWidth < 560;
+  // nothing moves while the page is hidden or the drawing is scrolled out of view
+  let away = false;
+  const quiet = () => document.hidden || away;
+  const lite = innerWidth <= 900 || matchMedia('(pointer: coarse)').matches;   // phones and tablets: calmer, cheaper motion
+  document.documentElement.classList.toggle('lite', lite);
+  const $ = id => document.getElementById(id);
+  const sky = $('sky'), city = $('scene'), fx = $('fx');
+  const NC = window.NoctuaCity || {};
+  const SVGNS = 'http://www.w3.org/2000/svg';
+
+  // ---- frame ----
+  // The drawing is W×H. The sky carries T extra units above it. On desktop the city is also generated GX units
+  // wider on each side, and the three layers share one wide viewBox that covers the right half of the page (slice).
+  const W = 600, H = 680, T = 160;
+  const wide = innerWidth > 900, GX = wide ? 230 : 0, X0 = -GX, X1 = W + GX;
+  // desktop: the viewBox is cut to the column's own aspect, showing the drawing's full height (a sliver of sky
+  // above it, so the skyline sits about a fifth of the way down) with the hero a little right of centre, and
+  // never letting the moon fall into the left dissolve
+  const stage = document.querySelector('.stage');
+  function frame() {
+    if (!wide) {
+      // phones: the drawing is cropped 30 units at the top so the skyline sits a sixth of the way down, and the
+      // sky layer runs T units above it (its CSS box is taller by the same share), up under the status bar
+      for (const s of [city, fx]) s.setAttribute('viewBox', `0 30 ${W} ${H - 30}`);
+      sky.setAttribute('viewBox', `0 ${-T} ${W} ${H - 30 + T}`);
+    } else {
+      const r = stage.getBoundingClientRect(), vbH = H + 10, vbW = vbH * (r.width || 1) / (r.height || 1);
+      const x0 = Math.min(0.64 * W - 0.56 * vbW, 0.22 * W - 61 - 0.1 * vbW);
+      for (const s of [sky, city, fx]) { s.setAttribute('viewBox', `${x0.toFixed(1)} -10 ${vbW.toFixed(1)} ${vbH}`); s.setAttribute('preserveAspectRatio', 'xMidYMid slice'); }
+    }
+  }
+  frame();
+  if (wide) addEventListener('resize', frame);
+  // where the skyline falls on screen, for the page's own afterglow at dusk and sunrise
+  const horizonY = () => document.documentElement.style.setProperty('--hy', `${Math.round(new DOMPoint(0, 0.2 * H).matrixTransform(city.getScreenCTM()).y)}px`);
+  horizonY(); addEventListener('resize', horizonY);
+  document.querySelector('.art').style.setProperty('--ar', (W / (H - 30)).toFixed(4));
+  matchMedia('(min-width: 901px)').addEventListener('change', () => location.reload());   // the two layouts are generated differently
+
+  const C = Math.sqrt(3) / 2;
+  const n = v => Math.round(v * 10) / 10;
+  let seed = 41;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+  const iso = (S, ox, oy) => (x, y, z = 0) => [ox + (x - y) * C * S, oy + (x + y) * 0.5 * S - z * S];
+  const tools = P => {
+    const xy = p => n(p[0]) + ' ' + n(p[1]);
+    const d = pts => 'M' + pts.map(p => xy(P(...p))).join('L') + 'Z';
+    const face = (pts, cls, attrs = '') => `<path class="${cls}" d="${d(pts)}" ${attrs}/>`;
+    const box = (x0, y0, z0, x1, y1, z1, c = {}) =>
+      face([[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], c.l || 'f-l') +
+      face([[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], c.r || 'f-r') +
+      face([[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], c.t || 'f-top');
+    return { d, face, box };
+  };
+
+  // ---- the world ----
+  // Blocks run long east–west (x). Avenues are the gaps along x, streets the gaps along y; north is −y.
+  // XW is the city's western edge.
+  const S = 40, BX = 2.4, BY = 1.0, AX = 0.55, SY = 0.36, PX = BX + AX, PY = BY + SY;
+  const I0 = -4;
+  const XW = I0 * PX - 0.75;
+  const HI = 3, HJ = 0;
+  const hx = HI * PX + BX / 2, hy = HJ * PY + BY / 2;
+  const P = iso(S, 0.64 * W - (hx - hy) * C * S, 0.8 * H - (hx + hy) * 0.5 * S);
+  const { d, face, box } = tools(P);
+  const K = { P, d, face, box, n, rnd, S, C };
+  const call = (name, ...args) => {
+    if (typeof NC[name] !== 'function') return null;
+    try { const r = NC[name](K, ...args); return r && typeof r.svg === 'string' ? r : null; }
+    catch (e) { console.warn('city module failed:', name, e); return null; }
+  };
+  const HORIZON = 0.2 * H;
+
+  // which block sits under a point on the drawing (ground level)
+  const blockAt = (sx, sy) => {
+    const u = (sx - P(0, 0)[0]) / (C * S), v = (sy - P(0, 0)[1]) / (0.5 * S);
+    const x = (u + v) / 2, y = (v - u) / 2;
+    return [Math.floor(x / PX), Math.floor(y / PY)];
+  };
+
+  const screenBox = pts => {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const p of pts) { const [x, y] = P(...p); x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    return [x0, y0, x1, y1];
+  };
+  const onScreen = (pts, pad = 12) => { const [x0, y0, x1, y1] = screenBox(pts); return x1 > X0 - pad && x0 < X1 + pad && y1 > HORIZON - 20 && y0 < H + pad; };
+
+  // ---- items: everything with depth, drawn back to front ----
+  const items = [];
+  const add = (x0, y0, x1, y1, r, o = {}) => {
+    if (!r) return;
+    const [cx, cy] = P((x0 + x1) / 2, (y0 + y1) / 2);
+    items.push({ key: (x0 + x1 + y0 + y1) / 2, cx, cy, svg: r.svg, slots: r.slots || [], lobby: r.lobby || null, far: o.far ?? cy < 0.36 * H, mood: o.mood, tower: o.tower, hero: o.hero, name: o.name });
+  };
+
+  function fbFloors(x0, y0, x1, y1, z0, z1) {
+    let s = '';
+    for (let z = z0 + 0.14; z < z1 - 0.1; z += 0.25) s += d([[x0, y1, z], [x1, y1, z], [x1, y0, z]]).slice(0, -1);
+    return s ? `<path class="faint" d="${s}"/>` : '';
+  }
+
+  // ---- the hero: an Art Deco tower with setbacks, a floodlit crown and a mast ----
+  let crownAt, beaconAt;
+  function hero(bx0, by0) {
+    let s = box(bx0 + 0.05, by0 + 0.05, 0, bx0 + BX - 0.05, by0 + BY - 0.05, 0.75) + fbFloors(bx0 + 0.05, by0 + 0.05, bx0 + BX - 0.05, by0 + BY - 0.05, 0, 0.75);
+    const piers = (x0, y0, x1, y1, z0, z1, step = 0.1) => {
+      let p = '';
+      for (let x = x0 + step; x < x1 - 0.02; x += step) p += `M${P(x, y1, z0).map(n).join(' ')}L${P(x, y1, z1).map(n).join(' ')}`;
+      for (let y = y0 + step; y < y1 - 0.02; y += step) p += `M${P(x1, y, z0).map(n).join(' ')}L${P(x1, y, z1).map(n).join(' ')}`;
+      return `<path class="faint" d="${p}"/>`;
+    };
+    const tier = (ax, ay, z0, z1, cls) =>
+      box(hx - ax, hy - ay, z0, hx + ax, hy + ay, z1, cls ? { l: cls + ' cl', r: cls + ' cr', t: 'f-top' } : {}) + piers(hx - ax, hy - ay, hx + ax, hy + ay, z0, z1);
+    // the base's coping and a grand stepped entrance; a frieze and a parapet at each setback
+    const baseA = [bx0 + 0.05, by0 + 0.05, bx0 + BX - 0.05, by0 + BY - 0.05], A = (ax, ay) => [hx - ax, hy - ay, hx + ax, hy + ay];
+    const door = portal(baseA, 0.22, 0.3, true);
+    s += door.svg + fine(ring(baseA, 0.66)) + parapet(baseA, 0.75, 1);
+    s += tier(0.85, 0.46, 0.75, 4.2) + frieze(A(0.85, 0.46), 4.2 - 0.08, 4.2 - 0.02) + parapet(A(0.85, 0.46), 4.2, 1);
+    s += tier(0.6, 0.4, 4.2, 7.1) + frieze(A(0.6, 0.4), 7.1 - 0.08, 7.1 - 0.02) + parapet(A(0.6, 0.4), 7.1, 1);
+    const slots = [];
+    const win = (x, y, z, f) => f === 'l'
+      ? d([[x, y, z], [x + 0.07, y, z], [x + 0.07, y, z + 0.13], [x, y, z + 0.13]])
+      : d([[x, y, z], [x, y + 0.07, z], [x, y + 0.07, z + 0.13], [x, y, z + 0.13]]);
+    for (let z = 4.4; z < 6.9; z += 0.26) {
+      for (const x of [-0.5, -0.3, -0.1, 0.1, 0.3]) slots.push({ kind: 'cool', face: 'l', d: win(hx + x, hy + 0.4, z, 'l') });
+      for (const y of [-0.3, -0.1, 0.1]) slots.push({ kind: 'cool', face: 'r', d: win(hx + 0.6, hy + y, z, 'r') });
+    }
+    for (let z = 1.0; z < 4.0; z += 0.26) {
+      for (const x of [-0.7, -0.45, -0.2, 0.05, 0.3, 0.55]) slots.push({ kind: 'cool', face: 'l', d: win(hx + x, hy + 0.46, z, 'l') });
+      for (const y of [-0.35, -0.12, 0.12]) slots.push({ kind: 'cool', face: 'r', d: win(hx + 0.85, hy + y, z, 'r') });
+    }
+    // the founder's window (easter egg): third row under the ring, middle of the moonlit face; never part of a unit
+    slots[7 * 8 + 2].kind = 'founder';
+    // spandrels between the window rows, the observatory ring under the crown, and the moonlit outer edge
+    let sp = '';
+    for (let z = 4.4; z < 6.9; z += 0.26) sp += ring(A(0.6, 0.4), z + 0.195);
+    for (let z = 1.0; z < 4.0; z += 0.26) sp += ring(A(0.85, 0.46), z + 0.195);
+    s += fine(sp) + `<path class="lk lk-ring" d="${strip(A(0.6, 0.4), 6.91, 6.95)}"/>`
+      + `<path class="edge" d="${L([[hx - 0.85, hy + 0.46, 0.75], [hx - 0.85, hy + 0.46, 4.2]]) + L([[hx - 0.85, hy - 0.46, 4.2], [hx - 0.85, hy + 0.46, 4.2]]) + L([[hx - 0.6, hy + 0.4, 4.2], [hx - 0.6, hy + 0.4, 7.1]]) + L([[hx - 0.6, hy - 0.4, 7.1], [hx - 0.6, hy + 0.4, 7.1]])}"/>`;
+    // the crown's light spills down the upper shaft and over the setback below it
+    const sa = A(0.6, 0.4);
+    const spill = `<path class="spill" fill="url(#spill-l)" d="${d([[sa[0], sa[3], 5.9], [sa[2], sa[3], 5.9], [sa[2], sa[3], 7.1], [sa[0], sa[3], 7.1]])}"/>`
+      + `<path class="spill" fill="url(#spill-r)" d="${d([[sa[2], sa[1], 5.9], [sa[2], sa[3], 5.9], [sa[2], sa[3], 7.1], [sa[2], sa[1], 7.1]])}"/>`
+      + `<path class="spill" style="fill: var(--amber)" fill-opacity=".14" d="${d([[sa[0], sa[1], 7.1], [sa[2], sa[1], 7.1], [sa[2], sa[3], 7.1], [sa[0], sa[3], 7.1]])}"/>`;
+    const CT = [[0.42, 0.33, 7.1, 7.75], [0.3, 0.26, 7.75, 8.2], [0.21, 0.19, 8.2, 8.55], [0.14, 0.13, 8.55, 8.8]];
+    let crown = CT.map(([ax, ay, z0, z1]) => tier(ax, ay, z0, z1, 'crown')).join('');
+    // engraved like the moon: chevrons in dark amber, and stipple that thickens toward the top of each tier
+    // (a private die, so the city's own sequence stays as it was)
+    let s3 = 1234, stip = '';
+    const r3 = () => (s3 = (s3 * 48271) % 2147483647) / 2147483647;
+    for (const [ax, ay, z0, z1] of CT) {
+      const nL = Math.round(1000 * 2 * ax * (z1 - z0)), nR = Math.round(1000 * 2 * ay * (z1 - z0));
+      for (let i = 0; i < nL + nR; i++) {
+        const t = r3(), u = r3();
+        if (r3() > 0.05 + 0.6 * t * t) continue;
+        const z = z0 + 0.03 + (z1 - z0 - 0.06) * t;
+        const pt = i < nL ? P(hx - ax + 0.02 + (2 * ax - 0.04) * u, hy + ay, z) : P(hx + ax, hy - ay + 0.02 + (2 * ay - 0.04) * u, z);
+        stip += `M${n(pt[0])} ${n(pt[1])}h0`;
+      }
+    }
+    crown += `<g class="crown-ink">${chevrons(A(0.42, 0.33), 7.1, 7.75) + chevrons(A(0.3, 0.26), 7.75, 8.2)}</g><path class="crown-stip" d="${stip}"/>`;
+    const [mx, my] = P(hx, hy, 8.8), [tx, ty] = P(hx, hy, 9.6), [ax, ay] = P(hx, hy, 10.5);
+    const r0 = 0.09 * 1.2247 * S, r1 = 0.055 * 1.2247 * S;
+    crown += `<path class="crown cl lantern" d="M${n(mx - r0)} ${n(my)}L${n(tx - r1)} ${n(ty)}L${n(tx + r1)} ${n(ty)}L${n(mx + r0)} ${n(my)}Z"/>`;
+    crown += `<path class="nofill" d="M${n(tx)} ${n(ty)}L${n(ax)} ${n(ay)}M${n(tx - r1 - 1.5)} ${n(ty + 3)}L${n(tx + r1 + 1.5)} ${n(ty + 3)}"/>`;
+    s += `<g data-light="HOME" data-toggle="HOME">${spill}${crown}<rect class="hit" x="${n(mx - 22)}" y="${n(ay)}" width="44" height="${n(P(hx, hy, 7.1)[1] - ay)}"/></g>`;
+    crownAt = P(hx, hy, 8.1); beaconAt = [ax, ay];
+    return { svg: `<g class="hero">${s}</g>`, slots, lobby: door.lobby };
+  }
+
+  // ---- every other building, in the hero's language: one window grid, one hand ----
+  const WIN = { w: 0.07, h: 0.13, row: 0.26, col: 0.2 };
+  const L = (pts) => 'M' + pts.map(p => P(...p).map(n).join(' ')).join('L');
+  // the two visible faces' outline at height z, as an open path
+  const ring = (a, z) => L([[a[0], a[3], z], [a[2], a[3], z], [a[2], a[1], z]]);
+  function gridSlots(a, z0, z1, kind, o = {}) {
+    const out = [], [x0, y0, x1, y1] = a;
+    const rows = []; for (let z = z0; z + WIN.h < z1 - 0.1; z += WIN.row) rows.push(z);
+    rows.forEach((z, ri) => {
+      const top = o.arched && ri === rows.length - 1;
+      const nl = Math.max(1, Math.floor((x1 - x0 - 0.08) / WIN.col)), nr = Math.max(1, Math.floor((y1 - y0 - 0.08) / WIN.col));
+      for (let k = 0; k < nl; k++) {
+        const c = x0 + (x1 - x0) * (k + 0.5) / nl, w = WIN.w / 2;
+        const pts = [[c - w, y1, z], [c + w, y1, z], [c + w, y1, z + WIN.h]];
+        if (top) for (let t = 1; t < 6; t++) { const q = Math.PI * t / 6; pts.push([c + w * Math.cos(q), y1, z + WIN.h + w * Math.sin(q)]); }
+        pts.push([c - w, y1, z + WIN.h]);
+        out.push({ kind, d: d(pts), face: 'l' });
+      }
+      for (let k = 0; k < nr; k++) {
+        const c = y0 + (y1 - y0) * (k + 0.5) / nr, w = WIN.w / 2;
+        const pts = [[x1, c - w, z], [x1, c + w, z], [x1, c + w, z + WIN.h]];
+        if (top) for (let t = 1; t < 6; t++) { const q = Math.PI * t / 6; pts.push([x1, c + w * Math.cos(q), z + WIN.h + w * Math.sin(q)]); }
+        pts.push([x1, c - w, z + WIN.h]);
+        out.push({ kind, d: d(pts), face: 'r' });
+      }
+    });
+    return out;
+  }
+  // one block of masonry with its facade rhythm
+  function mass(a, z0, z1, style, ground) {
+    const [x0, y0, x1, y1] = a;
+    let svg = box(x0, y0, z0, x1, y1, z1), p = '', strong = '';
+    const zs = ground ? 0.34 : z0;
+    if (style === 'piers') {
+      for (let x = x0 + 0.1; x < x1 - 0.03; x += 0.1) p += L([[x, y1, zs], [x, y1, z1 - 0.08]]);
+      for (let y = y0 + 0.1; y < y1 - 0.03; y += 0.1) p += L([[x1, y, zs], [x1, y, z1 - 0.08]]);
+    } else if (style === 'bands') {
+      for (let z = (ground ? 0.5 : z0 + 0.12) - 0.05; z < z1 - 0.14; z += WIN.row) strong += ring(a, z) + ring(a, z + WIN.h + 0.09);
+    } else {
+      for (let z = (ground ? 0.5 : z0 + 0.12) - 0.04; z < z1 - 0.14; z += WIN.row) p += ring(a, z);
+    }
+    p += ring(a, z1 - 0.08);
+    if (ground) p += ring(a, 0.34);
+    return svg + (p ? `<path class="faint" d="${p}"/>` : '') + (strong ? `<path class="nofill band" d="${strong}"/>` : '');
+  }
+  const inset = (a, k) => [a[0] + k, a[1] + k, a[2] - k, a[3] - k];
+  // ---- fine detail, drawn in one thinner line: more of it near, none far ----
+  const fine = s => s ? `<path class="fine" d="${s}"/>` : '';
+  // the two visible faces of a strip of wall between heights z0 and z1
+  const strip = (a, z0, z1) => d([[a[0], a[3], z0], [a[2], a[3], z0], [a[2], a[3], z1], [a[0], a[3], z1]]) + d([[a[2], a[1], z0], [a[2], a[3], z0], [a[2], a[3], z1], [a[2], a[1], z1]]);
+  // a closed rectangle on a roof at height z
+  const roofLine = (a, z) => L([[a[0], a[1], z], [a[2], a[1], z], [a[2], a[3], z], [a[0], a[3], z], [a[0], a[1], z]]);
+  // a cornice: the projecting box, its fillet line, and the thin shadow it casts on the wall below
+  function cornice(a, z, heavy, lod = 1, cs = 1) {
+    const o = (heavy ? 0.035 : 0.02) * cs, h = (heavy ? 0.07 : 0.04) * cs;
+    const c = [a[0] - o, a[1] - o, a[2] + o, a[3] + o];
+    let s = lod ? `<path class="cast" d="${strip(a, z - h - (heavy ? 0.05 : 0.035), z - h)}"/>` : '';
+    s += box(c[0], c[1], z - h, c[2], c[3], z);
+    if (lod) s += fine(ring(c, z - h * 0.42));
+    return s;
+  }
+  // a low parapet: a lip on the two near edges and a coping line round the roof
+  function parapet(a, z, lod = 1) {
+    if (!lod) return '';
+    const p = 0.04, [x0, y0, x1, y1] = a;
+    return face([[x0, y1, z], [x1, y1, z], [x1, y1, z + p], [x0, y1, z + p]], 'f-l') + face([[x1, y0, z], [x1, y1, z], [x1, y1, z + p], [x1, y0, z + p]], 'f-r')
+      + fine(roofLine(inset(a, 0.035), z));
+  }
+  // a Deco frieze: a small zigzag between two fine lines
+  function frieze(a, z0, z1, step = 0.075) {
+    const [x0, y0, x1, y1] = a, pts = [];
+    const nl = Math.max(2, Math.round((x1 - x0) / step)), nr = Math.max(2, Math.round((y1 - y0) / step));
+    for (let k = 0; k <= nl; k++) pts.push([x0 + (x1 - x0) * k / nl, y1, k % 2 ? z1 : z0]);
+    for (let k = 1; k <= nr; k++) pts.push([x1, y1 - (y1 - y0) * k / nr, (nl + k) % 2 ? z1 : z0]);
+    return fine(L(pts) + ring(a, z0) + ring(a, z1));
+  }
+  // nested chevrons, rising on both visible faces of a crown tier
+  function chevrons(a, z0, z1) {
+    const [x0, y0, x1, y1] = a, hh = z1 - z0, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, wx = (x1 - x0) / 2, wy = (y1 - y0) / 2;
+    let s = '';
+    for (const [k, top] of [[0.78, 0.84], [0.46, 0.6]]) {
+      const zb = z0 + hh * 0.14, zt = z0 + hh * top;
+      s += L([[cx - wx * k, y1, zb], [cx, y1, zt], [cx + wx * k, y1, zb]]) + L([[x1, cy + wy * k, zb], [x1, cy, zt], [x1, cy - wy * k, zb]]);
+    }
+    return fine(s);
+  }
+  // a street entrance on the near face: a frame, a dark opening with its transom, sometimes a stepped Deco head
+  function portal(a, w, hgt, deco) {
+    const y1 = a[3], cx = a[0] + (a[2] - a[0]) * 0.5, fw = w / 2 + 0.03, ow = w / 2;
+    const fr = deco
+      ? [[cx - fw, y1, 0], [cx - fw, y1, hgt + 0.03], [cx - fw * 0.55, y1, hgt + 0.03], [cx - fw * 0.55, y1, hgt + 0.065], [cx + fw * 0.55, y1, hgt + 0.065], [cx + fw * 0.55, y1, hgt + 0.03], [cx + fw, y1, hgt + 0.03], [cx + fw, y1, 0]]
+      : [[cx - fw, y1, 0], [cx - fw, y1, hgt + 0.03], [cx + fw, y1, hgt + 0.03], [cx + fw, y1, 0]];
+    const open = d([[cx - ow, y1, 0], [cx + ow, y1, 0], [cx + ow, y1, hgt], [cx - ow, y1, hgt]]);
+    return {
+      svg: `<path class="stone" d="${d(fr)}"/><path class="win-l" d="${open}"/>` + fine(L([[cx - ow, y1, hgt * 0.74], [cx + ow, y1, hgt * 0.74]]) + L([[cx, y1, 0], [cx, y1, hgt * 0.74]])),
+      lobby: open,
+    };
+  }
+  function bulkhead(a, z) {
+    const cx = (a[0] + a[2]) / 2, cy = (a[1] + a[3]) / 2;
+    return `<g class="bulk">${box(cx - 0.16, cy - 0.12, z, cx + 0.06, cy + 0.08, z + 0.2)}</g>`;
+  }
+  // one rooftop with a slim mast
+  function antenna(a, z, hgt) {
+    const cx = (a[0] + a[2]) / 2, cy = (a[1] + a[3]) / 2;
+    return `<path class="nofill mast" d=""${L([[cx, cy, z], [cx, cy, z + hgt]])}${L([[cx - 0.07, cy, z + hgt * 0.62], [cx + 0.07, cy, z + hgt * 0.62]])}${L([[cx - 0.045, cy, z + hgt * 0.8], [cx + 0.045, cy, z + hgt * 0.8]])}"/>`;
+  }
+  // a flagpole at a roof's corner, with a small pennant
+  function flagpole(a, z) {
+    const x = a[0] + 0.12, y = a[3] - 0.12, hgt = 0.55;
+    const [px, py] = P(x, y, z + hgt), dx = 7, dy = 3.8;
+    return `<path class="nofill mast" d="${L([[x, y, z], [x, y, z + hgt]])}"/>`
+      + `<path class="flag" d="M${n(px)} ${n(py + 0.4)}l${dx} ${n(dy * 0.35)}l${-0.4} ${dy}l${-dx + 0.4} ${n(-dy * 0.35)}Z"/>`;
+  }
+  // a thin wisp of steam rising from a vent; two copies, out of step, so it never stops
+  function steam(a, z) {
+    const cx = (a[0] + a[2]) / 2 - 0.05, cy = (a[1] + a[3]) / 2 - 0.02;
+    const [x, y] = P(cx, cy, z);
+    const w = 'c-2 -3 2.2 -5.5 .2 -8.5s-2.4 -5.6 -.2 -8.6s2.2 -4.6 .6 -7.4';
+    return box(cx - 0.035, cy - 0.035, z - 0.01, cx + 0.035, cy + 0.035, z + 0.06)
+      + `<g class="steam-g" transform="translate(${n(x)} ${n(y - 2.6)})"><path class="steam" d="M0 0${w}"/><path class="steam" style="animation-delay:-4.5s" d="M0 0${w}"/></g>`;
+  }
+  function tank(a, z) {
+    if (typeof NC.waterTower !== 'function') return '';
+    try { const r = NC.waterTower(K, a[0] + (a[2] - a[0]) * 0.3, (a[1] + a[3]) / 2, z, { r: 0.12 }); return r && r.svg || ''; } catch { return ''; }
+  }
+  const pyramid = (a, z, hgt, cls = 'f-l', clsR = 'f-r') => {
+    const [x0, y0, x1, y1] = a, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    return face([[x0, y1, z], [x1, y1, z], [cx, cy, z + hgt]], cls) + face([[x1, y0, z], [x1, y1, z], [cx, cy, z + hgt]], clsR);
+  };
+  // the vocabulary
+  function building(type, a, h, o = {}) {
+    let svg = '', slots = [], lobby = null;
+    const kind = o.kind || (type === 'row' || type === 'loft' ? 'warm' : 'cool');
+    const lod = o.lod ?? 1, w = a[2] - a[0];
+    const door = (pw, ph, deco) => { if (lod < 1 || w < pw + 0.2) return; const p = portal(a, pw, ph, deco); svg += p.svg; lobby = p.lobby; };
+    if (type === 'row') {
+      svg += mass(a, 0, h, 'plain', true) + cornice(a, h, false, lod, o.cs);
+      slots = gridSlots(a, 0.5, h, 'warm');
+      if (o.shop) { let sd = ''; const np = Math.max(2, Math.round((a[2] - a[0] - 0.12) / 0.16)); for (let k = 0; k < np; k++) { const u0 = a[0] + 0.06 + (a[2] - a[0] - 0.12) * k / np + 0.015, u1 = a[0] + 0.06 + (a[2] - a[0] - 0.12) * (k + 1) / np - 0.015; sd += d([[u0, a[3], 0.07], [u1, a[3], 0.07], [u1, a[3], 0.26], [u0, a[3], 0.26]]); } slots.push({ kind: 'shop', d: sd }); }
+      else if (lod > 1) door(0.08, 0.22, false);
+      if (o.extra) svg += bulkhead(a, h);
+      if (o.flag) svg += flagpole(a, h);
+    } else if (type === 'loft') {
+      svg += mass(a, 0, h, 'plain', true) + cornice(a, h, true, lod, o.cs);
+      door(0.12, 0.26, false);
+      slots = gridSlots(a, 0.5, h - 0.04, kind, { arched: true });
+      if (o.extra) svg += tank(a, h);
+      if (o.flag) svg += flagpole(a, h);
+    } else if (type === 'slab') {
+      svg += mass(a, 0, h, 'bands', true) + parapet(a, h, lod);
+      door(0.16, 0.26, false);
+      slots = gridSlots(a, 0.5, h, kind);
+      svg += bulkhead(a, h);
+      if (o.steam) svg += steam(a, h + 0.2);
+    } else if (type === 'deco') {
+      const tiers = h > 3.4 ? 3 : h > 2.2 ? 2 : 1;
+      let b = a, z0 = 0;
+      for (let t = 0; t < tiers; t++) {
+        const z1 = t === tiers - 1 ? h : z0 + (h - z0) * (t === 0 ? 0.62 : 0.6);
+        svg += mass(b, z0, z1, 'piers', !t);
+        // spandrels: one fine line between the window rows of the taller, nearer towers
+        const g0 = t ? z0 + 0.12 : 0.5;
+        if (lod > 1 && o.spandrel) { let sp = ''; for (let z = g0; z + WIN.h < z1 - 0.1 - WIN.row; z += WIN.row) sp += ring(b, z + WIN.h + 0.065); svg += fine(sp); }
+        if (lod > 1 && tiers > 1) svg += frieze(b, z1 - 0.075, z1 - 0.02);
+        if (!t) door(0.16, 0.27, true);
+        slots = slots.concat(gridSlots(b, g0, z1, kind));
+        svg += parapet(b, z1, lod);
+        z0 = z1; b = inset(b, Math.min(0.16, (b[2] - b[0]) * 0.14, (b[3] - b[1]) * 0.18));
+      }
+      if (o.extra) svg += tank(b, h);
+      if (o.antenna) svg += bulkhead(b, h) + antenna(b, h + 0.2, 0.9);
+    } else if (type === 'crown') {
+      // a slender shaft with a distinctive top
+      const sh = h * 0.84;
+      svg += mass(a, 0, sh, 'piers', true);
+      if (lod > 1) svg += frieze(a, sh - 0.075, sh - 0.02);
+      door(0.12, 0.27, true);
+      slots = gridSlots(a, 0.5, sh, kind);
+      const b = inset(a, Math.min(0.1, (a[2] - a[0]) * 0.15));
+      const top = o.crown || 'pyramid';
+      let crown = '';
+      if (top === 'pyramid') crown = mass(b, sh, sh + 0.14, 'plain') + pyramid(b, sh + 0.14, h - sh, 'copper', 'copper');
+      else if (top === 'ziggurat') { let c = b, z = sh; for (let t = 0; t < 3; t++) { const z1 = z + (h - sh) / 3; crown += box(c[0], c[1], z, c[2], c[3], z1, { l: 'crown cl', r: 'crown cr' }) + (t < 2 ? chevrons(c, z, z1) : ''); z = z1; c = inset(c, Math.min(0.08, (c[2] - c[0]) * 0.18)); } }
+      else if (top === 'lantern') { const c = inset(b, 0.06), zt = sh + (h - sh) * 0.7; crown = mass(b, sh, sh + 0.12, 'plain') + box(c[0], c[1], sh + 0.12, c[2], c[3], zt, { l: 'crown cl', r: 'crown cr' }) + chevrons(c, sh + 0.12, zt) + pyramid(c, zt, (h - sh) * 0.3, 'copper', 'copper'); }
+      else { const c = inset(b, 0.05); crown = box(c[0], c[1], sh, c[2], c[3], sh + 0.22, { l: 'crown cl', r: 'crown cr' }) + fine(ring(c, sh + 0.06) + ring(c, sh + 0.16)) + pyramid(c, sh + 0.22, (h - sh) * 0.5) + L([[(c[0] + c[2]) / 2, (c[1] + c[3]) / 2, sh + 0.22 + (h - sh) * 0.5], [(c[0] + c[2]) / 2, (c[1] + c[3]) / 2, h + 0.5]]).replace(/^/, '<path class="nofill" d="') + '"/>'; }
+      svg += o.flood ? `<g data-light="${o.flood}" data-toggle="${o.flood}">${crown}</g>` : crown;
+    } else if (type === 'step') {
+      // a stepped low-rise: the taller mass behind-left, a lower one in front-right, each with its own cornice
+      const [x0, y0, x1, y1] = a, xm = x0 + (x1 - x0) * 0.58, hb = Math.max(0.7, h * 0.62);
+      const aL = [x0, y0, xm, y1], aR = [xm + 0.02, y0, x1, y1];
+      svg += mass(aL, 0, h, 'plain', true) + cornice(aL, h, false, lod, o.cs) + mass(aR, 0, hb, 'plain', true) + cornice(aR, hb, false, lod, o.cs);
+      slots = gridSlots(aL, 0.5, h, 'warm').concat(gridSlots(aR, 0.5, hb, 'warm'));
+      if (lod > 1) door(0.1, 0.24, false);
+    } else if (type === 'terrace') {
+      // a setback with a terrace: the lower mass carries a railing, the upper mass stands back from the street
+      const zt = Math.max(1.0, h * 0.62), b = [a[0] + 0.08, a[1] + 0.06, a[2] - 0.34, a[3] - 0.28];
+      svg += mass(a, 0, zt, 'piers', true) + parapet(a, zt, lod) + fine(ring(inset(a, 0.06), zt + 0.05) + ring(inset(a, 0.06), zt + 0.1));
+      svg += mass(b, zt, h, 'piers') + parapet(b, h, lod);
+      door(0.14, 0.27, true);
+      slots = gridSlots(a, 0.5, zt, kind).concat(gridSlots(b, zt + 0.12, h, kind));
+    } else if (type === 'chamfer') {
+      // a corner building with its near corner cut at 45°, a column of windows on the cut, a coping instead of a cornice
+      const [x0, y0, x1, y1] = a, c = Math.min(0.22, (x1 - x0) * 0.3, (y1 - y0) * 0.3);
+      svg += face([[x0, y1, 0], [x1 - c, y1, 0], [x1 - c, y1, h], [x0, y1, h]], 'f-l')
+        + face([[x1 - c, y1, 0], [x1, y1 - c, 0], [x1, y1 - c, h], [x1 - c, y1, h]], 'f-l')
+        + face([[x1, y0, 0], [x1, y1 - c, 0], [x1, y1 - c, h], [x1, y0, h]], 'f-r')
+        + face([[x0, y0, h], [x1, y0, h], [x1, y1 - c, h], [x1 - c, y1, h], [x0, y1, h]], 'f-top');
+      let p = '';
+      for (let z = 0.46; z < h - 0.14; z += WIN.row) p += L([[x0, y1, z], [x1 - c, y1, z], [x1, y1 - c, z], [x1, y0, z]]);
+      svg += `<path class="faint" d="${p}"/>` + fine(L([[x0, y1, h - 0.06], [x1 - c, y1, h - 0.06], [x1, y1 - c, h - 0.06], [x1, y0, h - 0.06]]));
+      slots = gridSlots([x0, y0, x1 - c, y1], 0.5, h, kind).filter(sl => sl.face === 'l').concat(gridSlots([x0, y0, x1, y1 - c], 0.5, h, kind).filter(sl => sl.face === 'r'));
+      for (let z = 0.5; z + WIN.h < h - 0.1; z += WIN.row) slots.push({ kind, face: 'l', d: d([[x1 - c * 0.65, y1 - c * 0.35, z], [x1 - c * 0.35, y1 - c * 0.65, z], [x1 - c * 0.35, y1 - c * 0.65, z + WIN.h], [x1 - c * 0.65, y1 - c * 0.35, z + WIN.h]]) });
+      door(0.12, 0.26, true);
+    }
+    return { svg, slots, lobby };
+  }
+
+  // ---- the island: tall near the hero, lower toward the edges, a few surprises ----
+  let pads = '';
+  const heroS = P(hx, hy);
+  const LM = {
+    chrysler: blockAt(0.86 * W, 0.66 * H),
+    woolworth: blockAt(0.2 * W, 0.86 * H),
+    flatiron: blockAt(0.42 * W, 1.0 * H),
+  };
+  const isLM = (name, i, j) => LM[name][0] === i && LM[name][1] === j;
+  // Broadway: a diagonal through the grid, past the Flatiron
+  const FT = [LM.flatiron[0] * PX, LM.flatiron[1] * PY + 0.05], slope = 2.2 / 0.85, sec = Math.sqrt(1 + slope * slope);
+  const bway = y => FT[0] + 0.28 * sec + slope * (y - FT[1]);
+  const bwayHalf = 0.17 * sec;
+  const crossesBroadway = (x0, y0, x1, y1) => {
+    const f = [[x0, y0], [x1, y0], [x0, y1], [x1, y1]].map(([x, y]) => x - bway(y));
+    return Math.min(...f) < bwayHalf + 0.05 && Math.max(...f) > -bwayHalf - 0.05;
+  };
+  let crowned = 0, antennaN = 0, steamN = 0, flagN = 0;
+  for (let j = -22; j < 22; j++) for (let i = I0; i < 10; i++) {
+    const x0 = i * PX, y0 = j * PY;
+    if (!onScreen([[x0, y0, 0], [x0 + BX, y0 + BY, 0], [x0, y0, 6], [x0 + BX, y0 + BY, 6]])) continue;
+    if (P(x0 + BX, y0 + BY)[1] < HORIZON - 20) continue;            // lost in the haze
+    pads += d([[x0, y0, 0], [x0 + BX, y0, 0], [x0 + BX, y0 + BY, 0], [x0, y0 + BY, 0]]);
+    if (i === HI && j === HJ) { add(x0, y0, x0 + BX, y0 + BY, hero(x0, y0), { mood: 1.5, hero: true }); continue; }
+    if (isLM('flatiron', i, j) && typeof NC.flatiron === 'function') {
+      add(x0, y0, x0 + 2.2, y0 + BY, call('flatiron', x0, y0 + 0.05, x0 + 2.2, y0 + BY - 0.05, { tip: 'north', broadway: 'east', h: 3.2, seed: 23 }), { mood: 1.5 });
+      continue;
+    }
+    if (isLM('chrysler', i, j) && typeof NC.chrysler === 'function') {
+      lots(i, j, x0, y0, [[0, 0.6]], 1.6);
+      add(x0 + 0.6, y0, x0 + 1.8, y0 + BY, call('chrysler', x0 + 0.65, y0 + 0.08, x0 + 1.75, y0 + BY - 0.08, { h: 7.4, crownKind: 'warm', seed: 3 }), { mood: 1.5, tower: true, name: 'chrysler' });
+      lots(i, j, x0, y0, [[1.8, BX]], 1.6);
+      continue;
+    }
+    if (isLM('woolworth', i, j) && typeof NC.woolworth === 'function') {
+      lots(i, j, x0, y0, [[0, 0.65]], 1.4);
+      add(x0 + 0.65, y0, x0 + 1.75, y0 + BY, call('woolworth', x0 + 0.7, y0 + 0.08, x0 + 1.7, y0 + BY - 0.08, { h: 6.0, seed: 5 }), { mood: 1.5, tower: true, name: 'woolworth' });
+      lots(i, j, x0, y0, [[1.75, BX]], 1.4);
+      continue;
+    }
+    // heights fall away from the hero
+    const [bx, by] = P(x0 + BX / 2, y0 + BY / 2), dist = Math.hypot((bx - heroS[0]) / W, (by - heroS[1]) / H);
+    let blockH = Math.max(1.0, 3.0 - dist * 3.2) * (0.8 + rnd() * 0.45);
+    lots(i, j, x0, y0, [[0, BX]], blockH, dist);
+  }
+
+  // a block is a run of two or three buildings around a shared height
+  function lots(i, j, bx0, by0, spans, blockH, dist = 0.4) {
+    const y0 = by0 + 0.04, y1 = by0 + BY - 0.04;
+    for (const [s0, s1] of spans) {
+      let x = bx0 + s0;
+      const end = bx0 + s1;
+      while (x < end - 0.3) {
+        // slivers, ordinary lots, and now and then a wide slab or a whole block
+        const rw = rnd();
+        let xe = Math.min(end, x + (rw < 0.15 ? 0.42 + rnd() * 0.12 : rw < 0.8 ? 0.65 + rnd() * 0.7 : 1.4 + rnd() * 1.0));
+        if (end - xe < 0.45) xe = end;
+        const lx0 = x + 0.03, lx1 = xe - 0.03;
+        x = xe;
+        if (lx1 - lx0 < 0.35 || crossesBroadway(lx0, y0, lx1, y1)) continue;
+        // around the block's height, with the odd low-rise or big neighbour
+        const rh = rnd();
+        let h = blockH * (rh < 0.14 ? 0.4 + rnd() * 0.15 : rh > 0.88 ? 1.45 + rnd() * 0.35 : 0.82 + rnd() * 0.36);
+        const sx = P((lx0 + lx1) / 2, (y0 + y1) / 2)[0];
+        const front = Math.abs(sx - heroS[0]) < 120 && j > HJ && j <= HJ + 6;
+        if (front) h = Math.min(h, 1.3);                               // keep the hero's silhouette clear
+        // pick a type that suits the height; now and then a crowned tower among the tall ones
+        const r = rnd();
+        let type, o = { extra: rnd() < 0.18, shop: rnd() < 0.5 };
+        if (h < 1.5) type = 'row';
+        else if (h < 2.3) type = r < 0.45 ? 'loft' : r < 0.75 ? 'slab' : 'deco';
+        else type = r < 0.5 ? 'deco' : r < 0.75 ? 'slab' : 'loft';
+        if (!front && dist < 0.42 && h > 2.2 && crowned < 5 && rnd() < 0.35) {
+          type = 'crown'; h = Math.min(5.2, h * 1.5); crowned++;
+          o.crown = ['pyramid', 'ziggurat', 'lantern', 'spire'][crowned % 4];
+          if (crowned === 2) o.flood = 'CROWN2';
+        }
+        let a = [lx0, y0, lx1, y1];
+        if (type === 'crown') a = [(lx0 + lx1) / 2 - Math.min(0.32, (lx1 - lx0) / 2), y0 + 0.14, (lx0 + lx1) / 2 + Math.min(0.32, (lx1 - lx0) / 2), y1 - 0.14];
+        const far = P((lx0 + lx1) / 2, (y0 + y1) / 2)[1] < 0.36 * H;
+        // detail falls away with distance: none far, the most on the near and tall
+        o.lod = far ? 0 : (dist < 0.3 || P((lx0 + lx1) / 2, y1)[1] > 0.7 * H || h > 2.6) ? 2 : 1;
+        if (sx < -30 || sx > W + 30) o.lod = Math.min(o.lod, 1);          // the wide margins carry less detail
+        const hsh = (Math.sin(lx0 * 12.9898 + y0 * 78.233) * 43758.5453 % 1 + 1) % 1;   // a hash, so the city's own dice stay as they were
+        o.spandrel = hsh < 0.55;
+        // the foreground band gets a little more variety in the same language: stepped low-rises, chamfered corners,
+        // terraced setbacks, arched lofts, and cornices of slightly different weights
+        if (type !== 'crown' && !front && P((lx0 + lx1) / 2, y1)[1] > 0.76 * H) {
+          o.cs = 0.85 + hsh * 0.5;
+          if (h < 2.3 && lx1 - lx0 > 0.6 && hsh < 0.16) type = 'step';
+          else if (h < 2.6 && lx1 - lx0 > 0.6 && hsh < 0.3) { type = 'chamfer'; o.kind = hsh < 0.22 ? 'warm' : 'cool'; }
+          else if (h < 2.2 && hsh < 0.44) type = 'loft';
+          else if (h > 1.5 && h < 3.2 && hsh < 0.56) type = 'terrace';
+        }
+        const cx = sx / W;
+        if (type === 'deco' && o.lod > 1 && h > 2.6 && !front && cx > 0.5 && cx < 0.85 && !antennaN) { o.antenna = true; o.extra = false; antennaN++; }
+        if (type === 'slab' && o.lod && h > 1.6 && h < 3.2 && cx > 0.35 && cx < 0.8 && !steamN) { o.steam = true; steamN++; }
+        if ((type === 'loft' || type === 'row') && o.lod > 1 && front && !o.extra && !flagN) { o.flag = true; flagN++; }
+        add(lx0, y0, lx1, y1, building(type, a, h, o), { far, tower: type === 'crown' });
+      }
+    }
+  }
+  const bwayStrip = `<path class="street" d="${d([[bway(-26) - bwayHalf, -26, 0.002], [bway(26) - bwayHalf, 26, 0.002], [bway(26) + bwayHalf, 26, 0.002], [bway(-26) + bwayHalf, -26, 0.002]])}"/>`;
+
+  // ---- street light: lamps along every avenue and street ----
+  const lamps = [];
+  {
+    const xs = [], ys = [];
+    for (let i = I0 - 1; i < 11; i++) xs.push(i * PX + BX + AX / 2);          // avenues (run along y)
+    for (let j = -22; j < 22; j++) ys.push(j * PY + BY + SY / 2);              // streets (run along x)
+    const keep = (x, y) => { const [sx, sy] = P(x, y); return sx > X0 - 6 && sx < X1 + 6 && sy > HORIZON && sy < H + 6 && x > XW + 0.2 && !crossesBroadway(x - 0.02, y - 0.02, x + 0.02, y + 0.02); };
+    for (const x of xs) for (let y = -26; y < 26; y += 0.68) for (const sd of [-1, 1]) { const lx = x + sd * (AX / 2 - 0.05); if (keep(lx, y)) lamps.push({ x: lx, y, on: rnd() < 0.92 }); }
+    for (const y of ys) for (let x = 0; x < 30; x += 0.8) for (const sd of [-1, 1]) { const ly = y + sd * (SY / 2 - 0.04); if (keep(x, ly)) lamps.push({ x, y: ly, on: rnd() < 0.85 }); }
+  }
+  const lampPaths = () => {
+    let dots = '';
+    for (const l of lamps) {
+      if (!l.on) continue;
+      const [sx, sy] = P(l.x, l.y, 0.02);
+      dots += `M${n(sx)} ${n(sy - 1.1)}a1.1 1.1 0 1 0 .01 0Z`;
+    }
+    return dots;
+  };
+  // ---- light: the units a city really lights up by ----
+  const lights = { HOME: { on: true }, TAG: { on: false }, DK: { on: true }, CROWN2: { on: false } };
+  const flippable = [];
+  const beacons = [];
+  const center = ds => {
+    const nums = ds.match(/-?\d+(\.\d+)?/g).map(Number);
+    let x = 0, y = 0, c = 0; for (let i = 0; i + 1 < nums.length; i += 2) { x += nums[i]; y += nums[i + 1]; c++; }
+    return [x / c, y / c];
+  };
+
+  // windows group into rows (one storey of one face), rows into units:
+  // an office floor, an apartment of one to three windows, a whole shopfront
+  function unitsFor(it) {
+    const T = 0.577;
+    const recs = it.slots.map((s, i) => ({ i, kind: s.kind, c: s.kind === 'beacon' ? null : center(s.d) }));
+    const units = [];
+    const rows = list => {
+      const key = (r, k) => k === 'a' ? r.c[1] - T * r.c[0] : r.c[1] + T * r.c[0];
+      const groups = { a: new Map(), b: new Map() };
+      for (const r of list) for (const k of ['a', 'b']) {
+        const q = Math.round(key(r, k) / 2.5);
+        const m = groups[k]; if (!m.has(q)) m.set(q, []); m.get(q).push(r);
+      }
+      const used = new Set(), out = [];
+      for (const g of [...groups.a.values(), ...groups.b.values()].sort((x, y) => y.length - x.length)) {
+        const free = g.filter(r => !used.has(r.i));
+        if (!free.length) continue;
+        free.forEach(r => used.add(r.i));
+        out.push(free.sort((x, y) => x.c[0] - y.c[0]));
+      }
+      return out.sort((a, b) => a[0].c[1] - b[0].c[1]);
+    };
+    rows(recs.filter(r => r.kind === 'cool')).forEach((row, ri) => units.push({ kind: 'cool', idx: row.map(r => r.i), y: row[0].c[1], row: ri }));
+    rows(recs.filter(r => r.kind === 'warm')).forEach((row, ri) => {
+      let k = 0;
+      while (k < row.length) {
+        const len = [1, 2, 2, 3, 3][Math.floor(rndL() * 5)];
+        let e = k + 1;
+        while (e < row.length && e - k < len && Math.abs(row[e].c[0] - row[e - 1].c[0]) < 0.6 * S) e++;
+        units.push({ kind: 'warm', idx: row.slice(k, e).map(r => r.i), y: row[k].c[1], row: ri });
+        k = e;
+      }
+    });
+    const shop = recs.filter(r => r.kind === 'shop').map(r => r.i);
+    if (shop.length) units.push({ kind: 'shop', idx: shop });
+    return units;
+  }
+  // a lit office floor rarely shows every window
+  function subset(u) {
+    let idx = u.idx;
+    if (u.kind.startsWith('cool') && idx.length > 6) {
+      const span = Math.max(3, Math.round(idx.length * (0.5 + rndL() * 0.5))), s0 = Math.floor(rndL() * (idx.length - span + 1));
+      idx = idx.slice(s0, s0 + span);
+    }
+    if (idx.length > 2) { const drop = rndL() * 0.3; idx = idx.filter(() => rndL() > drop); }
+    return idx;
+  }
+  // each lit window gets its own warmth and brightness: amber, honey, warm-white, the odd cooler one.
+  // A private die, so the city's own sequence (and so its layout) stays exactly as it was.
+  let seed2 = (Math.random() * 2147483646 | 0) + 1, seedL = (Math.random() * 2147483646 | 0) + 1;
+  const rnd2 = () => (seed2 = (seed2 * 48271) % 2147483647) / 2147483647;
+  // the base pattern of lit windows and each building's mood are drawn from a per-visit die (rndL), so the city is
+  // the same every time but never lit quite the same way; the geometry keeps the fixed city die (rnd)
+  const rndL = () => (seedL = (seedL * 48271) % 2147483647) / 2147483647;
+  const TONES = { warm: [0.5, 0.74, 0.95], cool2: [0.52, 0.78, 0.92], cool: [0.5, 0.76, 0.9], cooldim: [0.5, 0.76, 0.9] };
+  const toneOf = kind => { const th = TONES[kind]; if (!th) return 0; const r = rnd2(); return r < th[0] ? 0 : r < th[1] ? 1 : r < th[2] ? 2 : 3; };
+  const inFrame = c => c[0] > X0 + 0.06 * W && c[0] < X1 - 0.06 * W && c[1] > HORIZON && c[1] < H;
+  function lightsFor(it) {
+    const byKind = {};
+    let out = '';
+    it.lit = new Set(); it.key = [];
+    // a building's mood: dark, a few lights, lived in, or blazing
+    let mood = it.mood;
+    if (mood == null) { const r = rndL(); mood = r < 0.08 ? 0 : r < 0.3 ? 0.5 : r < 0.72 ? 1.3 : 2.4; }
+    if (narrow && mood > 0) mood = Math.max(mood, 0.6);
+    let topBeacon = null;
+    it.slots.forEach(s => {
+      if (s.kind === 'beacon') {
+        out += `<path class="lk lk-beacon" d="${s.d}"/>`;
+        const c = center(s.d); if (!topBeacon || c[1] < topBeacon[1]) topBeacon = c;
+      } else if (s.kind === 'founder') out += `<path class="lk lk-founder" data-light="DK" d="${s.d}"/>`;
+    });
+    if (topBeacon && inFrame(topBeacon) && !it.far) beacons.push(topBeacon);
+    it.units = unitsFor(it);
+    const ys = it.units.filter(u => u.y != null).map(u => u.y), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    let prevCool = null, prevWarm = null;
+    const coolRows = it.units.filter(u => u.kind === 'cool');
+    const lobby = coolRows.length ? coolRows[coolRows.length - 1] : null;
+    const tint = rndL();
+    for (const u of it.units) {
+      let p;
+      if (u.kind === 'cool') {
+        // offices read as warm-white floor bands
+        u.kind = rndL() < 0.55 ? 'cool2' : rndL() < 0.5 ? 'cooldim' : 'cool';
+        p = 0.3 * mood;
+        if (prevCool && rndL() < 0.7) p = prevCool.on ? 1 : 0;      // floors come in runs
+        if (u === lobby) p = 0.9;
+        if (it.tower && u.row <= 1) { p = 0.7; u.kind = tint < 0.6 ? 'cool2' : 'cool'; }
+        if (mood === 0 && u !== lobby) p = 0;
+      } else if (u.kind === 'warm') {
+        const low = y1 > y0 ? (u.y - y0) / (y1 - y0) : 0.5;
+        p = u.idx.length === 1 ? 0.05 * mood : (0.08 + 0.42 * Math.pow(low, 1.3)) * mood;
+        if (prevWarm && prevWarm.on && prevWarm.row === u.row && rndL() < 0.4) p = 1;
+      } else p = 0.75;
+      u.on = rndL() < Math.min(0.95, p);
+      if (u.kind === 'warm') prevWarm = u;
+      if (u.kind.startsWith('cool')) prevCool = u;
+      u.show = u.on ? subset(u) : [];
+      for (const i of u.idx) { const key = it.far ? `${u.kind}-0` : `${u.kind}-${toneOf(u.kind)}`; it.key[i] = key; (byKind[key] = byKind[key] || []).push(i); }
+      for (const i of u.show) it.lit.add(i);
+    }
+    it.kinds = byKind;
+    // every window shows as a quiet mark; the lit ones sit on top
+    let wl = '', wr = '';
+    it.slots.forEach(s => { if (s.kind === 'warm' || s.kind === 'cool' || s.kind === 'founder') { if (s.face === 'r') wr += s.d; else wl += s.d; } });
+    const wins = (wl ? `<path class="win-l" d="${wl}"/>` : '') + (wr ? `<path class="win-r" d="${wr}"/>` : '');
+    for (const key in byKind) { const [kind, t] = key.split('-'); out += `<path class="lk lk-${kind}${t > 0 ? ' t' + t : ''}" data-kind="${key}" d="${byKind[key].filter(i => it.lit.has(i)).map(i => it.slots[i].d).join('')}"/>`; }
+    // the lobby: lit in most lived-in buildings, dark in the dark ones
+    if (it.lobby) { const lb = mood > 0 && rnd2() < 0.6; it.lobbyOn = it.hero || lb; out += `<path class="lk lk-lobby" data-lobby d="${it.lobby}"${it.lobbyOn ? ' style="opacity:1"' : ''}/>`; }
+    return wins + out;
+  }
+
+  // ---- compose ----
+  items.sort((a, b) => a.key - b.key);
+
+  const MOON = { x: 0.22 * W, y: (narrow ? 0.07 : 0.095) * H, r: 61 };
+
+  // the far city, then a veil of air, then everything near: distance reads as value, the hero stays crisp.
+  // Each building also carries its distance from the hero as a CSS delay (--d out, --db back) for the city wave.
+  const heroD = it => Math.hypot(it.cx - heroS[0], (it.cy - heroS[1]) * 1.3), moonD = it => Math.hypot(it.cx - MOON.x, (it.cy - HORIZON) * 1.3);
+  const maxD = Math.max(...items.map(heroD)), maxM = Math.max(...items.map(moonD));
+  const WT = ['#f5c46f', '#ffdcab', '#f0c886'];
+  // the wave travels in fine rings with a little scatter, so its edge is ragged like a real city's: delays snap to
+  // 1/16 of a second, so on phones the city changes a couple of dozen times rather than on every frame
+  const step4 = t => (Math.max(0, Math.round((t + (rndL() - 0.5) * 0.18) * 16) / 16)).toFixed(3);
+  let town = '', farTown = '';
+  items.forEach((it, k) => {
+    const body = it.svg + lightsFor(it);
+    const canFlip = !it.far && it.units.some(u => u.kind === 'warm' || u.kind.startsWith('cool'));
+    if (canFlip) flippable.push(k);
+    const q = heroD(it) / maxD, qm = moonD(it) / maxM;
+    const detail = it.hero || it.name ? 2 : it.far ? 0 : (it.cy > 0.6 * H || it.tower) ? 2 : (it.cy > 0.45 * H ? 1 : 0);
+    const g = `<g data-i="${k}" data-detail="${detail}"${canFlip ? ` data-b="${k}"` : ''}${it.far ? ' class="far"' : ''} style="--d:${step4(q * 1.6)}s;--db:${step4((1 - q) * 1.8)}s;--dm:${step4(qm * 1.6)}s;--wt:${WT[k % 3]}">${body}</g>`;
+    if (it.far) farTown += g; else town += g;
+  });
+  town = `<g class="town">${farTown}<rect class="veil" x="${X0}" width="${X1 - X0}" height="${H}" fill="url(#veil)"/>${town}</g>`;
+  // by day, a dashed centre line down every avenue and street
+  let sl = '';
+  for (let i = I0 - 1; i < 11; i++) { const x = i * PX + BX + AX / 2; if (x > XW + 0.3) sl += L([[x, -26, 0], [x, 26, 0]]); }
+  for (let j = -22; j < 22; j++) { const y = j * PY + BY + SY / 2; sl += L([[XW + 0.3, y, 0], [30, y, 0]]); }
+  const ground = `<path class="street" d="${d([[XW, -40, 0], [40, -40, 0], [40, 30, 0], [XW, 30, 0]])}"/><path class="streetline" d="${sl}"/><path class="gnd" d="${pads}"/>${bwayStrip}`;
+  const streetLight = `<path class="lampdots" id="lampdots" d="${lampPaths()}"/>`;
+
+  city.innerHTML = `
+    <defs>
+      <pattern id="hatch" width="2.6" height="2.6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="2.6" height="2.6" style="fill: var(--f-r)"/>
+        <path d="M0 0V2.6" style="stroke: var(--hatch); stroke-width: .55; vector-effect: none"/>
+      </pattern>
+      <linearGradient id="horizon" gradientUnits="userSpaceOnUse" x1="0" y1="${HORIZON - 30}" x2="0" y2="${HORIZON + 60}">
+        <stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/>
+      </linearGradient>
+      <mask id="haze" maskUnits="userSpaceOnUse" x="${X0}" y="0" width="${X1 - X0}" height="${H}"><rect x="${X0}" width="${X1 - X0}" height="${H}" fill="url(#horizon)"/></mask>
+      <linearGradient id="horizon-g" gradientUnits="userSpaceOnUse" x1="0" y1="${HORIZON - 30}" x2="0" y2="${n(HORIZON + 0.22 * H)}">
+        <stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/>
+      </linearGradient>
+      <mask id="haze-g" maskUnits="userSpaceOnUse" x="${X0}" y="0" width="${X1 - X0}" height="${H}"><rect x="${X0}" width="${X1 - X0}" height="${H}" fill="url(#horizon-g)"/></mask>
+      <linearGradient id="face-l" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" style="stop-color: var(--fl-bot)"/><stop offset="1" style="stop-color: var(--fl-top)"/>
+      </linearGradient>
+      <linearGradient id="face-r" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" style="stop-color: var(--fr-bot)"/><stop offset="1" style="stop-color: var(--fr-top)"/>
+      </linearGradient>
+      <linearGradient id="flood" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" style="stop-color: var(--amber-hi)"/><stop offset="1" style="stop-color: var(--amber); stop-opacity: .6"/>
+      </linearGradient>
+      <linearGradient id="flood-r" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" style="stop-color: var(--amber)"/><stop offset="1" style="stop-color: var(--amber); stop-opacity: .35"/>
+      </linearGradient>
+      <linearGradient id="spill-l" gradientUnits="userSpaceOnUse" x1="0" y1="${n(P(hx, hy, 7.1)[1])}" x2="0" y2="${n(P(hx, hy, 5.9)[1])}">
+        <stop offset="0" style="stop-color: var(--amber); stop-opacity: .22"/><stop offset="1" style="stop-color: var(--amber); stop-opacity: 0"/>
+      </linearGradient>
+      <linearGradient id="spill-r" gradientUnits="userSpaceOnUse" x1="0" y1="${n(P(hx, hy, 7.1)[1])}" x2="0" y2="${n(P(hx, hy, 5.9)[1])}">
+        <stop offset="0" style="stop-color: var(--amber); stop-opacity: .12"/><stop offset="1" style="stop-color: var(--amber); stop-opacity: 0"/>
+      </linearGradient>
+      <linearGradient id="veil" gradientUnits="userSpaceOnUse" x1="0" y1="${HORIZON - 20}" x2="0" y2="${n(0.42 * H)}">
+        <stop offset="0" style="stop-color: var(--veil); stop-opacity: var(--veil-o, .6)"/><stop offset=".5" style="stop-color: var(--veil); stop-opacity: .3"/><stop offset="1" style="stop-color: var(--veil); stop-opacity: 0"/>
+      </linearGradient>
+    </defs>
+    <g mask="url(#haze-g)">${ground}${streetLight}</g>
+    <g mask="url(#haze)">${town}</g>`;
+
+  // ---- glass: the moving things are small drawings of their own (see .float in the CSS) ----
+  // #float carries the sky's coordinates and sits under the city; #float-top carries the city's and sits over it
+  const glassOf = [[$('float'), sky], [$('float-sky'), sky], [$('float-top'), city]];
+  const syncGlass = () => glassOf.forEach(([f, s]) => {
+    const m = s.getScreenCTM(), r = f.getBoundingClientRect();
+    if (m) f.firstElementChild.style.transform = `matrix(${m.a}, 0, 0, ${m.d}, ${m.e - r.left}, ${m.f - r.top})`;
+  });
+  // a small drawing placed at x, y (w × h, in drawing units); its own coordinates start at vx, vy
+  const glass = (where, x, y, w, h, html = '', cls = '', vx = x, vy = y) => {
+    const e = document.createElementNS(SVGNS, 'svg');
+    e.setAttribute('viewBox', `${n(vx)} ${n(vy)} ${n(w)} ${n(h)}`);
+    if (cls) e.setAttribute('class', cls);
+    e.style.cssText = `left:${n(x)}px;top:${n(y)}px;width:${n(w)}px;height:${n(h)}px`;
+    e.innerHTML = html;
+    where.appendChild(e);
+    return e;
+  };
+  const pane = sel => document.querySelector(sel);
+
+  // ---- sky: a star field, a moon by night and a sun by day ----
+  if (NC.skyCSS) { const st = document.createElement('style'); st.textContent = NC.skyCSS; document.head.appendChild(st); }
+  {
+    let stars = '', moon = '', sun = '';
+    const phase = typeof NC.moonPhase === 'function' ? NC.moonPhase(new Date()) : 0.5;
+    if (typeof NC.sky === 'function') {
+      try {
+        // park the sky's own moon off-canvas so its star field doesn't keep a clear ring around ours
+        const r = NC.sky(X1 - X0, H + T, { rnd, moon: { x: -999, y: -999, r: MOON.r }, phase, horizonY: 0.62 * H + T, meteor: false, avoid: [{ x: crownAt[0] - X0, y: crownAt[1] - 40 + T, r: 60 }] });
+        stars = r && r.svg ? `<g transform="translate(${X0} ${-T})">${r.svg}</g>` : '';
+      } catch (e) { console.warn('sky module failed', e); }
+    }
+    if (typeof NC.moon === 'function') { try { moon = NC.moon(MOON.x, MOON.y, MOON.r, phase, { tilt: -22, halo: false }); } catch (e) { console.warn(e); } }
+    if (typeof NC.sun === 'function') { try { sun = NC.sun(MOON.x, MOON.y, MOON.r * 0.95, {}); } catch (e) { console.warn(e); } }   // the sun sits exactly where the moon sits
+    if (!stars) for (let k = 0; k < 140; k++) stars += `<circle style="fill: var(--text); opacity: .5" cx="${n(rnd() * W)}" cy="${n(rnd() * (HORIZON + 40))}" r="${n(rnd() < 0.1 ? 1.1 : 0.45 + rnd() * 0.35)}"/>`;
+    if (!moon) moon = `<g class="sky-moon"><circle cx="${MOON.x}" cy="${MOON.y}" r="${MOON.r}" style="fill: #f1d48a; stroke: #9a6d1f"/></g>`;
+    if (!sun) sun = `<g class="sky-sun"><circle cx="${MOON.x}" cy="${MOON.y}" r="${MOON.r * 0.9}" style="fill: #f1d48a; stroke: #9a6d1f"/></g>`;
+    sky.innerHTML = `<g class="stars">${stars}</g><g id="bodies"><g id="moon-b">${moon}</g><g id="sun-b">${sun}</g></g>`;
+    // the star field brings its own moon; ours replaces it
+    const own = sky.querySelector('.stars .sky-moon');
+    if (own && moon) own.remove();
+    let xs = '', tw = '';
+    for (let k = 0; k < 340 * (X1 - X0) / W; k++) {
+      const x = X0 + rnd() * (X1 - X0), y = rnd() * (0.66 * H + T) - T, r = rnd() < 0.08 ? 0.9 : 0.3 + rnd() * 0.35;
+      if (Math.hypot(x - MOON.x, y - MOON.y) < MOON.r * 0.98) continue;   // only hidden behind the disc itself
+      if (Math.hypot(x - crownAt[0], y - crownAt[1]) < 44) continue;      // clean sky round the crown
+      if (rnd() < 0.07) tw += `<circle class="xstar sky-tw" style="--d:${n(3 + rnd() * 5)}s;--delay:-${n(rnd() * 6)}s" cx="${n(x)}" cy="${n(y)}" r="${n(r + 0.3)}"/>`;
+      else xs += `M${n(x)} ${n(y)}h0`;
+    }
+    sky.querySelector('.stars').insertAdjacentHTML('afterbegin', `<g class="xstars"><path d="${xs}"/>${tw}</g>`);
+    // the twinkling stars leave the sky for glass, keeping their place, size and rhythm (and their thinning
+    // toward the skyline, which the sky's mask gave them)
+    const box = pane('#float .tw-stars'), SH = HORIZON - 16;
+    for (const el of sky.querySelectorAll('.sky-tw:not(.sky-glyph)')) {
+      const t = el.parentElement.closest('[transform]'), [ox, oy] = t ? t.getAttribute('transform').match(/-?[\d.]+/g).map(Number) : [0, 0];
+      const [lx, ly] = el.tagName === 'circle' ? [+el.getAttribute('cx'), +el.getAttribute('cy')] : el.getAttribute('d').match(/-?[\d.]+/g).slice(0, 2).map(Number);
+      const fy = Math.max(0, Math.min(1, (ly + oy - 0.45 * SH) / (0.55 * SH)));
+      const time = el.getAttribute('style');
+      el.classList.remove('sky-tw'); el.removeAttribute('style');
+      const g = glass(box, lx + ox - 5, ly + oy - 5, 10, 10, `<g style="opacity: calc(var(--sky-tw-hi, 1) * (1 - ${n(fy)} * (1 - var(--star-lo, 1))))">${el.outerHTML}</g>`, 'tw', lx - 5, ly - 5);
+      g.setAttribute('style', g.getAttribute('style') + ';' + time);
+      el.remove();
+    }
+  }
+  // by day a faint warm tone surrounds the sun, fading before the skyline;
+  // at dusk and sunrise the stars thin toward the skyline's glow (the theme masks them with #star-fade)
+  {
+    const SH = HORIZON - 16;
+    sky.insertAdjacentHTML('afterbegin', `<defs>
+      <linearGradient id="star-lo" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${SH}"><stop offset="0" stop-color="#fff"/><stop offset=".45" stop-color="#fff"/><stop offset="1" stop-color="#fff" style="stop-opacity: var(--star-lo, 1)"/></linearGradient>
+      <mask id="star-fade" maskUnits="userSpaceOnUse" x="-400" y="-900" width="${W + 800}" height="${H + 1800}"><rect x="-400" y="-900" width="${W + 800}" height="${H + 1800}" fill="url(#star-lo)"/></mask>
+      <linearGradient id="above-city-wash" gradientUnits="userSpaceOnUse" x1="0" y1="${SH - 60}" x2="0" y2="${SH + 4}"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>
+      <mask id="wash-soft" maskUnits="userSpaceOnUse" x="-400" y="-900" width="${W + 800}" height="${H + 1800}"><rect x="-400" y="-900" width="${W + 800}" height="${H + 1800}" fill="url(#above-city-wash)"/></mask>
+      <radialGradient id="sunwash"><stop offset="0" style="stop-color: color-mix(in srgb, var(--day-sun, #f4d58e) 40%, #fffaf0)" stop-opacity=".75"/><stop offset=".3" style="stop-color: color-mix(in srgb, var(--day-sun, #f4d58e) 30%, #fffaf0)" stop-opacity=".38"/><stop offset=".6" stop-color="#fffaf0" stop-opacity=".12"/><stop offset="1" stop-color="#fffaf0" stop-opacity="0"/></radialGradient></defs>`);
+    sky.insertAdjacentHTML('afterbegin', `<linearGradient id="city-air" gradientUnits="userSpaceOnUse" x1="0" y1="${SH - 120}" x2="0" y2="${HORIZON + 50}"><stop offset="0" style="stop-color: var(--veil)" stop-opacity="0"/><stop offset=".7" style="stop-color: var(--veil)" stop-opacity=".32"/><stop offset="1" style="stop-color: var(--veil)" stop-opacity=".55"/></linearGradient>`
+      + `<rect class="city-air" x="${X0 - 400}" y="${SH - 120}" width="${X1 - X0 + 800}" height="${HORIZON + 50 - SH + 120}" fill="url(#city-air)"/>`);
+    $('bodies').insertAdjacentHTML('beforebegin', `<g mask="url(#wash-soft)"><circle class="sunwash" cx="${MOON.x}" cy="${MOON.y}" r="${n(MOON.r * 4.2)}" fill="url(#sunwash)"/></g>`);
+  }
+  // ---- by day, a few soft clouds drift east on the wind, and their shadows slide over the rooftops ----
+  // Each cloud is drawn like the city, flat colour and a fine pen, tinted by the hour,
+  // passing behind the sun and fading into the haze at the skyline. Four or five minutes to cross.
+  {
+    const span = X1 - X0 + 400, dur = span / 5 * 1000;
+    const drift = (el, x) => { if (reduced) { el.style.transform = `translateX(${n(x - X0 + 200)}px)`; return; } el.animate([{ transform: 'none' }, { transform: `translateX(${span}px)` }], { duration: dur, iterations: Infinity }).currentTime = (x - X0 + 200) / span * dur; };
+    // a cloud: round bumps on a flat base, filled flat, outlined once by a fine pen (the same shapes drawn a hair
+    // larger in ink underneath), with a cooler band along its underside
+    const cloud = (w, i) => {
+      const k = 4 + Math.floor(Math.random() * 3), h = w * 0.15, parts = [];
+      for (let j = 0; j < k; j++) { const t = j / (k - 1) - 0.5, r = w * (0.12 + 0.13 * (1 - 2 * Math.abs(t))) * (0.85 + Math.random() * 0.3); parts.push([t * w * 0.7 + (Math.random() - 0.5) * 6, -r - h * 0.2, r]); }
+      const shape = g => parts.map(([x, y, r]) => `<circle cx="${n(x)}" cy="${n(y)}" r="${n(r + g)}"/>`).join('') + `<rect x="${n(-w / 2 - g)}" y="${n(-h - g)}" width="${n(w + 2 * g)}" height="${n(h + 2 * g)}" rx="${n(h / 2 + g)}"/>`;
+      return `<clipPath id="cl${i}">${shape(0)}</clipPath><g class="cloud-ink">${shape(0.8)}</g><g class="cloud-fill">${shape(0)}</g><rect class="cloud-belly" clip-path="url(#cl${i})" x="${n(-w)}" y="${n(-h * 0.85)}" width="${n(2 * w)}" height="${n(2 * h)}"/>`;
+    };
+    // the band starts low enough that the tallest cloud clears the top edge; phones' short sky gets smaller clouds
+    const top = wide ? 62 : 10, count = wide ? 7 : 4, size = wide ? 1 : 0.8;
+    const xs = [];
+    for (let i = 0; i < count; i++) {
+      const q = (i + Math.random() * 0.7) / count, y = top + (HORIZON - 34 - top) * q, w = (190 - 100 * q) * size, flat = 0.85 - 0.25 * q;
+      const x = X0 - 200 + span * ((i * 0.37 + Math.random() * 0.2) % 1);
+      xs.push(x);
+      drift(glass(pane('#float .clouds'), X0 - 200 - 0.75 * w, y - 0.45 * w, 1.5 * w, 0.55 * w, `<g transform="scale(1 ${n(flat)})">${cloud(w, i)}</g>`, '', -0.75 * w, -0.45 * w), x);
+    }
+    // each shadow travels under one of the clouds, falling on the city below it (glass too, so no repaint)
+    for (let i = 0; i < Math.min(5, xs.length); i++) {
+      const w = 130 + Math.random() * 90, y = HORIZON + 120 + (H - HORIZON - 160) * (i + Math.random() * 0.5) / 5;
+      drift(glass(pane('#float-top .shades'), X0 - 200 - w, y - 0.42 * w, 2 * w, 0.84 * w, `<radialGradient id="cs${i}"><stop offset="0" stop-color="#4f6f96" stop-opacity=".4"/><stop offset=".6" stop-color="#4f6f96" stop-opacity=".2"/><stop offset="1" stop-color="#4f6f96" stop-opacity="0"/></radialGradient><ellipse rx="${n(w)}" ry="${n(w * 0.42)}" fill="url(#cs${i})"/>`, '', -w, -0.42 * w), xs[i]);
+    }
+  }
+  // the sun and moon move to glass in front of the clouds and the hazy far city
+  {
+    const R = MOON.r * 2.4;
+    glass(pane('#float-sky .bodies'), MOON.x - R, MOON.y - R, 2 * R, 2 * R).append($('bodies'));
+  }
+  // the switch: the outgoing body fades out where it stands, then the other fades in on the same spot
+  let swapToken = 0;
+  async function sunAndMoon(night, first) {
+    const out = $(night ? 'sun-b' : 'moon-b'), inc = $(night ? 'moon-b' : 'sun-b');
+    if (first || reduced) { out.style.opacity = 0; inc.style.opacity = 1; return; }
+    if (inc.style.opacity === '1') return;
+    const token = ++swapToken;
+    const a = out.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 380, easing: 'ease-in', fill: 'forwards' });
+    await a.finished.catch(() => {});
+    if (token !== swapToken) return;
+    out.style.opacity = 0; a.cancel();
+    inc.style.opacity = 1;
+    inc.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 720, easing: 'ease-out' });
+  }
+
+  {
+    const [cx, cy] = crownAt, [bx, by] = beaconAt;
+    fx.innerHTML = `<defs>
+        <radialGradient id="crownglow">
+          <stop offset="0" style="stop-color: var(--amber); stop-opacity: .36"/>
+          <stop offset=".45" style="stop-color: var(--amber); stop-opacity: .1"/>
+          <stop offset="1" style="stop-color: var(--amber); stop-opacity: 0"/>
+        </radialGradient>
+        <radialGradient id="crownskirt">
+          <stop offset="0" style="stop-color: var(--amber); stop-opacity: .11"/>
+          <stop offset="1" style="stop-color: var(--amber); stop-opacity: 0"/>
+        </radialGradient>
+      </defs>
+      <ellipse class="crownglow" data-light="HOME" cx="${n(cx)}" cy="${n(cy + 55)}" rx="130" ry="150" fill="url(#crownskirt)"/>
+      <ellipse class="crownglow" data-light="HOME" cx="${n(cx)}" cy="${n(cy + 18)}" rx="42" ry="72" fill="url(#crownglow)"/>
+      <circle class="moonhit" cx="${n(MOON.x)}" cy="${n(MOON.y)}" r="${n(MOON.r * 1.15)}"/>
+      <circle class="beacon-ring" cx="${n(bx)}" cy="${n(by)}" r="3.4"/>
+`;
+    // the beacons and the rooftop steam pulse on glass over the city
+    [[bx, by, 2.2, 0], ...beacons.map((b, i) => [b[0], b[1], 1.8, -(1.3 + i * 1.7)])].forEach(([x, y, r, d]) =>
+      glass(pane('#float-top .beacons'), x - 4, y - 4, 8, 8, `<circle cx="${n(x)}" cy="${n(y)}" r="${r}"/>`, 'beacon').style.setProperty('--delay', `${n(d)}s`));
+    city.querySelectorAll('.steam-g').forEach(el => {
+      const [x, y] = el.getAttribute('transform').match(/-?[\d.]+/g).map(Number);
+      glass(pane('#float-top .steam-l'), x - 8, y - 30, 16, 34).append(el);
+    });
+  }
+
+  // ---- the favicon's ink, read once for the title mark ----
+  function readInk(img) {
+    const Wd = img.naturalWidth, Hd = img.naturalHeight;
+    const cv = document.createElement('canvas'); cv.width = Wd; cv.height = Hd;
+    const cx = cv.getContext('2d'); cx.drawImage(img, 0, 0);
+    const px = cx.getImageData(0, 0, Wd, Hd).data, ink = new Uint8Array(Wd * Hd);
+    for (let i = 0; i < Wd * Hd; i++) if (px[i * 4 + 3] > 127 && (px[i * 4] + px[i * 4 + 1] + px[i * 4 + 2]) / 3 < 160) ink[i] = 1;
+    return { ink, Wd, Hd };
+  }
+  function analyse({ ink, Wd, Hd }) {
+    let x0 = Wd, y0 = Hd, x1 = 0, y1 = 0;
+    for (let i = 0; i < Wd * Hd; i++) if (ink[i]) { const x = i % Wd, y = (i / Wd) | 0; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    const seen = new Uint8Array(Wd * Hd);
+    const fill = s => {
+      const q = [s], pts = []; seen[s] = 1;
+      while (q.length) {
+        const i = q.pop(); pts.push(i); const x = i % Wd, y = (i / Wd) | 0;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= Wd || ny >= Hd) continue;
+          const j = ny * Wd + nx; if (!seen[j] && !ink[j]) { seen[j] = 1; q.push(j); }
+        }
+      }
+      return pts;
+    };
+    for (let x = 0; x < Wd; x++) for (const y of [0, Hd - 1]) if (!ink[y * Wd + x] && !seen[y * Wd + x]) fill(y * Wd + x);
+    for (let y = 0; y < Hd; y++) for (const x of [0, Wd - 1]) if (!ink[y * Wd + x] && !seen[y * Wd + x]) fill(y * Wd + x);
+    const holes = [];
+    for (let i = 0; i < Wd * Hd; i++) if (!ink[i] && !seen[i]) {
+      const pts = fill(i); if (pts.length < 12) continue;
+      let sx = 0, sy = 0; for (const p of pts) { sx += p % Wd; sy += (p / Wd) | 0; }
+      holes.push([sx / pts.length, sy / pts.length, Math.sqrt(pts.length / Math.PI), pts.length]);
+    }
+    holes.sort((a, b) => b[3] - a[3]);
+    const eyes = holes.slice(0, 2).sort((a, b) => a[0] - b[0]);
+    if (eyes.length < 2) throw new Error('eyes not found');
+    return { bbox: [x0, y0, x1, y1], eyes };
+  }
+  // measured from favicon.png; used when the pixels can't be read (file://)
+  const FALLBACK = { bbox: [33, 4, 147, 176], eyes: [[85, 37, 13], [118, 37, 13]] };
+
+  // ---- the owl as a mark beside the title: the favicon's ink through a crisp threshold ----
+  // (a filter can't read the page's CSS variables for its flood, so there is one per theme)
+  {
+    const mark = $('mark');
+    const inkFilter = (id, col) => `<filter id="${id}" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">`
+      + `<feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -.2125 -.7154 -.0721 1 0"/>`
+      + `<feGaussianBlur stdDeviation="1.1"/><feComponentTransfer result="c"><feFuncA type="linear" slope="16" intercept="-7.6"/></feComponentTransfer>`
+      + `<feFlood flood-color="${col}"/><feComposite in2="c" operator="in"/></filter>`;
+    const draw = info => {
+      const { bbox: [x0, y0, x1, y1], eyes } = info, pad = 2;
+      mark.setAttribute('viewBox', `${x0 - pad} ${y0 - pad} ${x1 - x0 + 2 * pad} ${y1 - y0 + 2 * pad}`);
+      mark.innerHTML = `<defs>${inkFilter('mark-ink-night', '#ece8de')}${inkFilter('mark-ink-day', '#27313f')}</defs>`
+        + `<image class="ink-night" href="favicon.png" width="180" height="180" filter="url(#mark-ink-night)"/>`
+        + `<image class="ink-day" href="favicon.png" width="180" height="180" filter="url(#mark-ink-day)"/>`
+        + eyes.map(([ex, ey, er]) => `<circle class="disc" cx="${n(ex)}" cy="${n(ey)}" r="${n(er * 1.04)}"/>`
+          + `<circle class="iris" cx="${n(ex)}" cy="${n(ey)}" r="${n(er * 0.58)}"/>`).join('');
+    };
+    draw(FALLBACK);
+    const im = new Image();
+    im.onload = () => { try { draw(analyse(readInk(im))); } catch {} };
+    im.src = 'favicon.png';
+    // now and then it blinks
+    if (!reduced) (function idle() {
+      setTimeout(() => {
+        mark.classList.add('blink'); setTimeout(() => mark.classList.remove('blink'), 140);
+        idle();
+      }, 2500 + Math.random() * 4000);
+    })();
+  }
+
+  // ---- switching lights ----
+  function set(id, on) {
+    lights[id].on = on;
+    for (const el of document.querySelectorAll(`[data-light="${id}"]`)) {
+      el.classList.toggle(el.classList.contains('project') ? 'lit' : 'on', on);
+    }
+  }
+  for (const id in lights) set(id, lights[id].on);
+  // ---- living lights: units switch with a soft fade, never a pop ----
+  const renderKey = (k, key) => {
+    const it = items[k], el = city.querySelector(`[data-i="${k}"] [data-kind="${key}"]`);
+    if (el) el.setAttribute('d', it.kinds[key].filter(i => it.lit.has(i)).map(i => it.slots[i].d).join(''));
+  };
+  const paint = (k, idx) => new Set(idx.map(i => items[k].key[i])).forEach(key => renderKey(k, key));
+  // a unit switched at once, without a fade (the caller repaints)
+  const setNow = (it, u, on) => { u.show.forEach(i => it.lit.delete(i)); u.on = on; u.show = on ? subset(u) : []; u.show.forEach(i => it.lit.add(i)); };
+  // a temporary copy of some windows, laid on top inside the building's own group (so nearer buildings still cover it)
+  // how much of a window shows: its middle and corners are tested against the city's own shapes (the moon's tap
+  // target and the text don't count). 'glass' if all of it shows, 'hidden' if a nearer building covers all of it,
+  // otherwise 'city'. Measured once per window, until the page is resized.
+  const seenOf = new Map();
+  addEventListener('resize', () => seenOf.clear());
+  const pts = d => { const v = d.match(/-?[\d.]+/g).map(Number), out = []; for (let j = 0; j + 1 < v.length; j += 2) out.push([v[j], v[j + 1]]); return out; };
+  function seen(k, i) {
+    const key = k + '.' + i;
+    if (!seenOf.has(key)) {
+      const ps = pts(items[k].slots[i].d), c = ps.reduce((a, p) => [a[0] + p[0] / ps.length, a[1] + p[1] / ps.length], [0, 0]), m = city.getScreenCTM();
+      const hits = [c, ...ps.map(p => [0.7 * p[0] + 0.3 * c[0], 0.7 * p[1] + 0.3 * c[1]])].map(([x, y]) => {
+        const q = new DOMPoint(x, y).matrixTransform(m), el = document.elementsFromPoint(q.x, q.y).find(e => e.closest('#scene [data-i]'));
+        return el && el.closest('[data-i]').dataset.i === String(k);
+      });
+      if (hits.some(h => h === undefined)) return 'city';             // outside the drawing, or mid-transition: ask again later
+      seenOf.set(key, hits.every(Boolean) ? 'glass' : hits.some(Boolean) ? 'city' : 'hidden');
+    }
+    return seenOf.get(key);
+  }
+  // an overlay of some of a building's windows, for fading: on glass when all of them show, so the fade costs the
+  // city no repaint; nowhere when none of them show (it fades unseen); otherwise inside the building, where nearer
+  // buildings still cover it. Removing it removes its glass.
+  const lightsPane = pane('#float-top .lights');
+  new MutationObserver(() => lightsPane.querySelectorAll('svg:empty').forEach(e => e.remove())).observe(lightsPane, { childList: true, subtree: true });
+  function ghost(k, idx, cls) {
+    const p = document.createElementNS(SVGNS, 'path'), d = idx.map(i => items[k].slots[i].d).join('');
+    p.setAttribute('class', cls);
+    p.setAttribute('d', d);
+    const where = idx.map(i => seen(k, i));
+    if (where.every(w => w === 'glass')) {
+      const ps = pts(d), xs = ps.map(q => q[0]), ys = ps.map(q => q[1]), x0 = Math.min(...xs) - 1, y0 = Math.min(...ys) - 1;
+      glass(lightsPane, x0, y0, Math.max(...xs) + 1 - x0, Math.max(...ys) + 1 - y0).append(p);
+    } else if (!where.every(w => w === 'hidden')) city.querySelector(`[data-i="${k}"]`).appendChild(p);
+    return p;
+  }
+  const toneCls = key => { const [kind, t] = key.split('-'); return `lk lk-${kind}${t > 0 ? ' t' + t : ''}`; };
+  const fadeMs = () => 450 + Math.random() * 450;
+  function switchUnit(k, u, on, cleaners = false) {
+    const it = items[k];
+    if (u.busy || u.on === on) return;
+    u.busy = true; u.on = on;
+    if (on) {
+      u.show = subset(u);
+      const keys = [...new Set(u.show.map(i => it.key[i]))], dur = fadeMs();
+      const gs = keys.map(key => ghost(k, u.show.filter(i => it.key[i] === key), toneCls(key)));
+      const anims = gs.map(g => g.animate([{ opacity: 0, offset: 0 }], { duration: dur, easing: 'ease-in-out', fill: 'both' }));
+      Promise.all(anims.map(a => a.finished.catch(() => {}))).then(() => {
+        for (const i of u.show) it.lit.add(i);
+        keys.forEach(key => renderKey(k, key));
+        gs.forEach(g => g.remove());
+        u.busy = false;
+      });
+    } else {
+      const show = u.show; u.show = [];
+      for (const i of show) it.lit.delete(i);
+      paint(k, show);
+      // all at once, or window by window along the floor as the cleaners leave
+      const seq = cleaners ? (Math.random() < 0.5 ? show.slice() : show.slice().reverse()).map(i => [i]) : [show];
+      const span = cleaners ? 1000 + Math.random() * 1000 : 0;
+      const anims = seq.map((grp, s) => {
+        const keys = [...new Set(grp.map(i => it.key[i]))];
+        return keys.map(key => {
+          const g = ghost(k, grp.filter(i => it.key[i] === key), toneCls(key));
+          const a = g.animate([{ opacity: 0 }], { duration: cleaners ? 380 : fadeMs(), delay: seq.length > 1 ? s * span / seq.length : 0, easing: 'ease-in-out', fill: 'forwards' });
+          return a.finished.catch(() => {}).then(() => g.remove());
+        });
+      }).flat();
+      Promise.all(anims).then(() => { u.busy = false; });
+    }
+  }
+  // a click switches one of the building's apartments or office floors
+  function flip(k) {
+    const pool = items[k].units.filter(u => (u.kind === 'warm' || u.kind.startsWith('cool')) && !u.busy);
+    if (!pool.length) return;
+    const u = pool[Math.floor(Math.random() * pool.length)];
+    switchUnit(k, u, !u.on);
+    return u;
+  }
+
+  // "homing" brightens the crown
+  let homeWas = true;
+  const project = document.querySelector('a.project');
+  const focus = on => {
+    if (on) { homeWas = lights.HOME.on; set('HOME', true); } else set('HOME', homeWas);
+    set('TAG', on);
+  };
+  project.addEventListener('mouseenter', () => focus(true));
+  project.addEventListener('focus', () => focus(true));
+  project.addEventListener('mouseleave', () => focus(false));
+  project.addEventListener('blur', () => focus(false));
+
+  // ---- taps on buildings, detected by hand so touch and mouse behave alike: one tap flips a light after a
+  //      short wait (in case a second tap follows); the eggs below may claim a double tap, a long press on a
+  //      building, or a single tap on a landmark ----
+  const hooks = { double: null, hold: null, tap: [] };
+  let down = null, lastTap = null, flipTimer = 0, holdTimer = 0, lastLamp = null;
+  city.addEventListener('pointerdown', e => {
+    const b = e.target.closest('[data-b]');
+    down = b && !e.target.closest('[data-toggle]') ? { k: +b.dataset.b, x: e.clientX, y: e.clientY } : null;
+    clearTimeout(holdTimer);
+    if (down && hooks.hold) holdTimer = setTimeout(() => { if (down) { const k = down.k; down = null; hooks.hold(k); } }, 900);
+  });
+  city.addEventListener('pointermove', e => { if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 12) { down = null; clearTimeout(holdTimer); } });
+  city.addEventListener('pointercancel', () => { down = null; clearTimeout(holdTimer); });
+  city.addEventListener('contextmenu', e => e.preventDefault());
+  city.addEventListener('pointerup', e => {
+    clearTimeout(holdTimer);
+    if (!down) return;
+    const { k } = down, now = Date.now();
+    down = null;
+    if (lastTap && lastTap.k === k && now - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 24) {
+      clearTimeout(flipTimer); lastTap = null;
+      if (hooks.double) hooks.double(k); else flip(k);
+      return;
+    }
+    lastTap = { k, x: e.clientX, y: e.clientY, t: now };
+    clearTimeout(flipTimer);
+    flipTimer = setTimeout(() => { lastTap = null; if (!hooks.tap.some(f => f(k))) flip(k); }, 280);
+  });
+  city.addEventListener('click', e => {
+    const t = e.target.closest('[data-toggle]');
+    if (t) { const id = t.dataset.toggle; set(id, !lights[id].on); if (id === 'HOME') homeWas = lights.HOME.on; return; }
+    if (e.target.closest('[data-b]')) return;
+    const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(city.getScreenCTM().inverse());
+    let best = null, bd = 12;
+    for (const l of lamps) { const [sx, sy] = P(l.x, l.y, 0.02), dd = Math.hypot(sx - pt.x, sy - pt.y); if (dd < bd) { bd = dd; best = l; } }
+    lastLamp = best;
+    if (best) { best.on = !best.on; $('lampdots').setAttribute('d', lampPaths()); }
+  });
+
+  // ---- theme: night, day, or auto (the visitor's own hour) ----
+  // Auto follows the clock through four times: sunrise and dusk are the night under a warming or fading sky, never
+  // a choice of their own. Choosing night or day shows it at the real hour when that falls inside it, otherwise
+  // at its heart, so the lights are almost real time but always in character.
+  const root = document.documentElement, btn = $('theme');
+  const modes = ['night', 'day', 'auto'];
+  const GLYPH = { night: '☾', day: '☀', auto: '◐' }, NAME = { night: 'night', dawn: 'sunrise', day: 'day', dusk: 'dusk', auto: 'auto' };
+  const SPAN = { dawn: [5, 7.5], day: [7.5, 17.5], dusk: [17.5, 20.5], night: [20.5, 29] };
+  const THEME = { night: 'dark', dawn: 'dawn', day: 'light', dusk: 'dusk' };
+  const realHour = () => { const d = new Date(); return d.getHours() + d.getMinutes() / 60; };
+  const inSpan = (k, h) => { const x = h < 5 ? h + 24 : h; return x >= SPAN[k][0] && x < SPAN[k][1]; };
+  let mode = 'night';            // night by default; the visitor's choice is remembered
+  try { const m = localStorage.getItem('noctua-time'); if (modes.includes(m)) mode = m; } catch {}
+  const phase = () => mode !== 'auto' ? mode : Object.keys(SPAN).find(k => inSpan(k, realHour()));
+  const clock = () => { const h = realHour(), lit = !inSpan('day', h); return mode === 'auto' || (mode === 'night') === lit ? h : mode === 'night' ? 23 : 13; };
+  const isNight = () => getComputedStyle(root).colorScheme.includes('dark');   // the lights are on (night, dusk, sunrise)
+  const phaseHooks = [];         // run when the time of day changes (the lights settle, the sky and the browser's bars retint)
+  let shown = null;
+  function applyTheme(first) {
+    if (!first) {
+      // repaint once without thousands of transitions; let the drawing cross-fade instead
+      root.classList.add('switching');
+      requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('switching')));
+    }
+    const p = phase();
+    root.setAttribute('data-theme', THEME[p]);
+    btn.textContent = `${GLYPH[mode]} ${NAME[mode]}`;
+    btn.setAttribute('aria-label', `Time of day: ${NAME[mode]}${mode === 'auto' ? ` (${NAME[p]})` : ''}. Choose another.`);
+    menu.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-checked', b.dataset.mode === mode));
+    sunAndMoon(p === 'night' || p === 'dusk', first);
+    city.setAttribute('aria-label', p === 'day' ? 'An isometric city of Art Deco towers drawn in fine blue line under the sun, clouds drifting over it.'
+      : 'An engraved isometric city of Art Deco towers under the ' + (p === 'dawn' ? 'rising sun' : 'moon and stars') + ', its windows lit.');
+    if (p !== shown) { shown = p; phaseHooks.forEach(f => f()); }
+  }
+  // the menu: night, day, then auto; arrows move, Escape or a click elsewhere closes
+  const menu = $('when');
+  menu.innerHTML = ['night', 'day'].map(m => `<button role="menuitemradio" data-mode="${m}"><span class="g">${GLYPH[m]}</span>${NAME[m]}</button>`).join('')
+    + `<hr><button role="menuitemradio" data-mode="auto"><span class="g">${GLYPH.auto}</span>auto <small>your clock</small></button>`;
+  const items_ = () => [...menu.querySelectorAll('[data-mode]')];
+  const open = on => {
+    menu.hidden = !on; btn.setAttribute('aria-expanded', on);
+    if (on) (menu.querySelector('[aria-checked="true"]') || items_()[0]).focus();
+  };
+  // inside a view transition the page cross-fades as a whole, so the sun and moon swap at once within it
+  const change = slow => {
+    if (reduced) return applyTheme();
+    // browsers without view transitions: the new time rises gently out of its own sky colour instead of cutting
+    if (!document.startViewTransition) { applyTheme(); document.querySelector('.frame').animate([{ opacity: 0 }, { opacity: 1 }], { duration: slow ? 3000 : 1200, easing: 'ease-out' }); return; }
+    root.style.setProperty('--vt', slow ? '6s' : '1.8s');
+    document.startViewTransition(() => applyTheme(true));
+  };
+  btn.addEventListener('click', () => open(menu.hidden));
+  menu.addEventListener('click', e => {
+    const b = e.target.closest('[data-mode]'); if (!b) return;
+    mode = b.dataset.mode;
+    try { localStorage.setItem('noctua-time', mode); } catch {}
+    change(false); open(false); btn.focus({ focusVisible: e.detail === 0 });
+  });
+  menu.addEventListener('keydown', e => {
+    const all = items_(), i = all.indexOf(document.activeElement);
+    if (e.key === 'Escape') { open(false); btn.focus(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); all[(i + (e.key === 'ArrowDown' ? 1 : all.length - 1)) % all.length].focus(); }
+    else if (e.key === 'Tab') open(false);
+  });
+  addEventListener('pointerdown', e => { if (!menu.hidden && !e.target.closest('.when')) open(false); });
+  setInterval(() => { if (phase() !== shown) change(true); }, 60000);
+  applyTheme(true);
+
+  // ---- the city keeps its own hours ----
+  // Units switch on irregular, Poisson-like intervals (bursts and lulls), toward a density that follows
+  // the visitor's clock: busiest in the evening, thinning after one, a few early risers before dawn.
+  const unitPool = [];
+  flippable.forEach(k => items[k].units.forEach(u => { if (u.kind === 'warm' || u.kind.startsWith('cool')) unitPool.push({ k, u, w: u.kind === 'warm' }); }));
+  // each kind keeps its own hours, as a share of the evening the city was drawn with: offices fullest from six
+  // to eight and emptying through the evening; homes filling after six, fullest eight to ten, then each
+  // building's own bedtime (23:00–01:30), a few stubborn windows after one, single kitchens from five
+  const OFFICE = [[0, .35], [1, .2], [1.5, .14], [5, .14], [7, .3], [9, .7], [17, .75], [18, 1], [20, 1], [23, .45], [24, .35]];
+  const HOMES = [[0, .8], [1.5, .3], [2, .18], [5, .18], [7, .42], [9, .25], [17, .3], [18, .6], [20, 1], [22, 1], [23, .95], [24, .8]];
+  const curve = (C, h) => { for (let i = 1; i < C.length; i++) if (h <= C[i][0]) { const [h0, v0] = C[i - 1], [h1, v1] = C[i]; return v0 + (v1 - v0) * (h - h0) / (h1 - h0); } return C[C.length - 1][1]; };
+  const L0w = unitPool.filter(p => p.w && p.u.on).length || 1, L0c = unitPool.filter(p => !p.w && p.u.on).length || 1;
+  items.forEach((it, k) => { it.bed = 23 + ((Math.sin(k * 12.9898) * 43758.5453 % 1 + 1) % 1) * 2.5; });
+  const past = it => { const h = clock(); return (h < 12 ? h + 24 : h) >= it.bed; };
+  function pickUnit(on, warm) {
+    let cand = unitPool.filter(p => !p.u.busy && p.u.on !== on && (warm == null || p.w === warm));
+    const h = clock();
+    let c2 = cand;
+    if (warm && !on && (h >= 22.5 || h < 2)) c2 = cand.filter(p => past(items[p.k]));        // the buildings whose bedtime has come go first
+    else if (warm && on && h >= 4.5 && h < 7.5) c2 = cand.filter(p => p.u.idx.length === 1);  // one kitchen window at a time
+    if (c2.length && Math.random() < 0.85) cand = c2;
+    return cand.length ? cand[Math.floor(Math.random() * cand.length)] : null;
+  }
+  const targets = () => { const h = clock(); return { warm: Math.max(0.12 * L0w, L0w * curve(HOMES, h)), cool: Math.max(0.1 * L0c, L0c * curve(OFFICE, h)) }; };
+  const litCount = warm => unitPool.reduce((a, p) => a + (p.w === warm && p.u.on ? 1 : 0), 0);
+  // settle to the hour: before the first paint, and again whenever the time of day changes
+  function settle() {
+    const t = targets(), touched = new Set();
+    for (const warm of [true, false]) {
+      for (let gap = Math.round(warm ? t.warm : t.cool) - litCount(warm); gap; gap -= Math.sign(gap)) {
+        const p = pickUnit(gap > 0, warm); if (!p) break;
+        const it = items[p.k];
+        setNow(it, p.u, gap > 0);
+        p.u.idx.forEach(i => touched.add(p.k + '|' + it.key[i]));
+      }
+    }
+    touched.forEach(t => { const [k, key] = t.split('|'); renderKey(+k, key); });
+  }
+  settle(); phaseHooks.push(settle);
+  function step() {
+    const t = targets(), gapW = litCount(true) - t.warm, gapC = litCount(false) - t.cool;
+    const warm = Math.random() < (Math.abs(gapW) / L0w >= Math.abs(gapC) / L0c ? 0.7 : 0.3);
+    const gap = warm ? gapW : gapC, L = warm ? L0w : L0c;
+    const off = Math.random() < Math.min(0.9, Math.max(0.1, 0.5 + gap / (0.15 * L + 1)));
+    const p = pickUnit(!off, warm);
+    if (p) switchUnit(p.k, p.u, !off);
+  }
+  // between one and five, now and then someone is up for a glass of water: a window on for twenty to sixty seconds
+  function nightOwl() {
+    const h = clock();
+    if (isNight() && !quiet() && h >= 1 && h < 5) {
+      const p = pickUnit(true, true);
+      if (p) { switchUnit(p.k, p.u, true); setTimeout(() => switchUnit(p.k, p.u, false), 20000 + Math.random() * 40000); }
+    }
+    setTimeout(nightOwl, 40000 + Math.random() * 80000);
+  }
+  // now and then a whole office floor goes dark, window by window, as the cleaners leave
+  function cleaners() {
+    const cand = unitPool.filter(p => p.u.on && !p.u.busy && p.u.kind.startsWith('cool') && p.u.show.length >= 4);
+    if (!cand.length) return step();
+    const p = cand[Math.floor(Math.random() * cand.length)];
+    switchUnit(p.k, p.u, false, true);
+  }
+  // rarely, a dark building's lobby lights up (and late at night one goes out)
+  function lobby() {
+    const all = items.map((it, k) => ({ it, k })).filter(x => x.it.lobby && !x.it.lobbyBusy);
+    const on = clock() < 1 || clock() > 5 || Math.random() < 0.4;
+    let cand = all.filter(x => x.it.lobbyOn !== on);
+    if (on) { const dark = cand.filter(x => x.it.lit.size === 0); if (dark.length) cand = dark; }
+    if (!cand.length) return step();
+    const { it, k } = cand[Math.floor(Math.random() * cand.length)];
+    const el = city.querySelector(`[data-i="${k}"] [data-lobby]`); if (!el) return;
+    it.lobbyBusy = true; it.lobbyOn = on;
+    const a = el.animate([{ opacity: on ? 0 : 1 }, { opacity: on ? 1 : 0 }], { duration: 700, easing: 'ease-in-out', fill: 'forwards' });
+    a.finished.catch(() => {}).then(() => { el.style.opacity = on ? 1 : 0; a.cancel(); it.lobbyBusy = false; });
+  }
+  const expo = mean => -Math.log(1 - Math.random()) * mean;
+  function event() { const r = Math.random(); if (r < 0.045) cleaners(); else if (r < 0.07) lobby(); else step(); }
+  function life() {
+    if (isNight() && !quiet()) {
+      event();
+      // a little burst: one or two more, close behind
+      if (!lite && Math.random() < 0.16) { const nb = Math.random() < 0.35 ? 2 : 1; for (let b = 1; b <= nb; b++) setTimeout(step, 120 + Math.random() * 600 * b); }
+    }
+    setTimeout(life, lite ? 3500 + expo(4000) : Math.min(9000, 250 + expo(1700)));
+  }
+
+  // ---- the day wash: a watercolour sky that follows the visitor's hour ----
+  // an airy blue day, still a little peach at its two ends (day shows 7:30-17:30).
+  const WASH = [   // hour, sky, horizon, ground, ink, the glow round the sun
+    [6.5, '#a6c6e6', '#f6cfb0', '#f8ede4', '#2c2f3a', '#f59f58'],
+    [8, '#9cc4ea', '#e6e9ef', '#f4f5f6', '#27313f', '#f8c96a'],
+    [10, '#93c0ea', '#e0edf8', '#f4f7f9', '#27313f', '#f9d06a'],
+    [17, '#93c0ea', '#e0edf8', '#f4f7f9', '#27313f', '#f9d06a'],
+    [18.5, '#a3c2e2', '#f6ccaa', '#f8ece2', '#2c2f3a', '#f59a52'],
+  ];
+  const mix = (a, b, t) => '#' + [0, 1, 2].map(i => Math.round(parseInt(a.slice(1 + 2 * i, 3 + 2 * i), 16) * (1 - t) + parseInt(b.slice(1 + 2 * i, 3 + 2 * i), 16) * t).toString(16).padStart(2, '0')).join('');
+  function wash() {
+    // dusk's glow fades as night comes on and sunrise's grows toward day, minute by minute; the stars answer
+    const ph = phase(), hh = clock() < 5 ? clock() + 24 : clock();
+    root.style.setProperty('--glow-t', (ph === 'dusk' ? 1 - 0.8 * (hh - 17.5) / 3 : ph === 'dawn' ? 0.3 + 0.7 * (hh - 5) / 2.5 : 1).toFixed(3));
+    const h = clock();
+    let i = 0;
+    while (i < WASH.length - 2 && h > WASH[i + 1][0]) i++;
+    const A = WASH[i], B = WASH[i + 1], t = Math.max(0, Math.min(1, (h - A[0]) / (B[0] - A[0])));
+    ['a', 'b', 'c', 'ink', 'sun'].forEach((k, j) => root.style.setProperty(`--day-${k}`, mix(A[j + 1], B[j + 1], t)));
+    const top = getComputedStyle(root).getPropertyValue('--wash-a').trim();
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.setAttribute('content', top));
+  }
+  wash(); setInterval(wash, 60000); phaseHooks.push(wash);
+
+  // ---- distant windows shimmer through the air; now and then a lamp or a television flickers ----
+  // Both are brief overlays inside the building's own group, so nothing ever shows through a nearer one.
+  const twinkly = [];
+  items.forEach((it, k) => {
+    if (!it.lit || !it.far) return;
+    for (const i of it.lit) { const c = center(it.slots[i].d); if (c[0] > 0.1 * W && c[0] < 0.92 * W && rnd2() < 0.35) twinkly.push([k, i]); }
+  });
+  twinkly.splice(48);
+  function twinkle() {
+    if (isNight() && !quiet() && twinkly.length) {
+      const [k, i] = twinkly[Math.floor(Math.random() * twinkly.length)];
+      if (items[k].lit.has(i)) {
+        const g = ghost(k, [i], 'dimmer'), dur = 1600 + Math.random() * 1800, lo = 0.18 + Math.random() * 0.14;
+        g.animate([{ opacity: 0 }, { opacity: lo }, { opacity: lo * 0.4 }, { opacity: lo * 0.9 }, { opacity: 0 }], { duration: dur, easing: 'ease-in-out' })
+          .finished.catch(() => {}).then(() => g.remove());
+      }
+    }
+    setTimeout(twinkle, 180 + expo(520));
+  }
+  function flicker() {
+    if (isNight() && !quiet()) {
+      const cand = unitPool.filter(p => p.u.on && p.u.kind === 'warm' && p.u.show.length);
+      if (cand.length) {
+        const p = cand[Math.floor(Math.random() * cand.length)], i = p.u.show[Math.floor(Math.random() * p.u.show.length)];
+        const g = ghost(p.k, [i], Math.random() < 0.5 ? 'flick tv' : 'flick');
+        g.animate([{ opacity: 0 }, { opacity: 0.7 }, { opacity: 0.2 }, { opacity: 0.6 }, { opacity: 0.3 }, { opacity: 0.55 }, { opacity: 0 }], { duration: 900 + Math.random() * 700, easing: 'linear' })
+          .finished.catch(() => {}).then(() => g.remove());
+      }
+    }
+    setTimeout(flicker, (lite ? 3 : 1) * (5000 + expo(11000)));
+  }
+  if (!reduced) { setTimeout(life, lite ? 5000 : 1500); if (!lite) setTimeout(twinkle, 3000); setTimeout(flicker, 9000); setTimeout(nightOwl, 30000); }
+
+  // ---- rare things in the sky: slow, sparse, gone again ----
+  const sel = (tag, attrs, html = '') => { const e = document.createElementNS(SVGNS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); e.innerHTML = html; return e; };
+  // at night, a distant aircraft crosses: a steady white light and a blinking red one
+  function aircraft() {
+    if (isNight() && !quiet()) {
+      const dir = Math.random() < 0.5 ? 1 : -1, y0 = 24 + Math.random() * 70, y1 = y0 + (Math.random() * 36 - 12);
+      const g = glass(pane('#float .fliers'), -4, -4, 8, 8, `<circle class="plane-w" r=".7"/><circle class="plane-r" cx="${-dir * 1.7}" cy=".3" r=".65"/>`, 'flourish plane');
+      g.animate([{ transform: `translate(${dir > 0 ? X0 - 20 : X1 + 20}px, ${y0}px)` }, { transform: `translate(${dir > 0 ? X1 + 20 : X0 - 20}px, ${y1}px)` }], { duration: 70000 + Math.random() * 30000, easing: 'linear' })
+        .finished.catch(() => {}).then(() => g.remove());
+    }
+    setTimeout(aircraft, 60000 + Math.random() * 60000);
+  }
+  // at night, rarely, a faint shooting star: one crisp hairline that draws itself and fades
+  function shootingStar() {
+    if (isNight() && !quiet()) {
+      const x0 = W * (0.35 + Math.random() * 0.55), y0 = 14 + Math.random() * 80, len = 38 + Math.random() * 30, ang = (Math.random() < 0.5 ? 1 : -1) * (0.45 + Math.random() * 0.35);
+      const dx = Math.sign(ang) * Math.cos(Math.abs(ang)) * len, dy = Math.sin(Math.abs(ang)) * len, id = 'mtr' + Date.now();
+      const g = sel('g', { class: 'flourish' }, `<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${n(x0)}" y1="${n(y0)}" x2="${n(x0 + dx)}" y2="${n(y0 + dy)}"><stop offset="0" stop-color="#fff6e0" stop-opacity="0"/><stop offset="1" stop-color="#fff6e0" stop-opacity=".9"/></linearGradient></defs>`
+        + `<path class="meteor" stroke="url(#${id})" d="M${n(x0)} ${n(y0)}l${n(dx)} ${n(dy)}" pathLength="100" stroke-dasharray="100 100" stroke-dashoffset="100"/>`);
+      sky.appendChild(g);
+      const m = g.querySelector('path');
+      m.animate([{ strokeDashoffset: 100, opacity: 0.7 }, { strokeDashoffset: 0, opacity: 0.7, offset: 0.55 }, { strokeDashoffset: -100, opacity: 0 }], { duration: 900, easing: 'cubic-bezier(.3, 0, .6, 1)', fill: 'forwards' })
+        .finished.catch(() => {}).then(() => g.remove());
+    }
+    setTimeout(shootingStar, 40000 + Math.random() * 50000);
+  }
+  // by day, dusk and sunrise, now and then, a few birds drift across: engraved "v" marks, wings slowly beating
+  function birds() {
+    if ((lite ? root.dataset.theme === 'light' : root.dataset.theme !== 'dark') && !quiet()) {
+      const dir = Math.random() < 0.5 ? 1 : -1, y0 = 40 + Math.random() * 70, y1 = y0 + (Math.random() * 30 - 15), count = 3 + Math.floor(Math.random() * 3);
+      let flock = '';
+      for (let b = 0; b < count; b++) {
+        const bx = -dir * (b * (7 + Math.random() * 6)), by = (b % 2 ? 1 : -1) * Math.random() * 5 + b * 1.2, sc = 1.55 + Math.random() * 0.5;
+        flock += `<g transform="translate(${n(bx)} ${n(by)}) scale(${n(sc)})"><path class="bird" style="animation-duration:${n(0.9 + Math.random() * 0.6)}s;animation-delay:-${n(Math.random())}s" d="M-3 -.9Q-1.5 -1.9 0 0Q1.5 -1.9 3 -.9"/></g>`;
+      }
+      const g = glass(pane('#float .fliers'), -80, -16, 160, 32, flock, 'flourish');
+      g.animate([{ transform: `translate(${dir > 0 ? X0 - 40 : X1 + 40}px, ${y0}px)` }, { transform: `translate(${dir > 0 ? X1 + 40 : X0 - 40}px, ${y1}px)` }], { duration: 75000 + Math.random() * 30000, easing: 'linear' })
+        .finished.catch(() => {}).then(() => g.remove());
+    }
+    setTimeout(birds, 30000 + Math.random() * 40000);
+  }
+  if (!reduced) { setTimeout(aircraft, 12000 + Math.random() * 30000); setTimeout(shootingStar, 30000 + Math.random() * 40000); setTimeout(birds, 5000 + Math.random() * 5000); }
+
+  // a flock of pigeons lives on the rooftops: it sits a while, then lifts off together and flies an arc to another
+  // roof, one that nothing nearer hides. Not at night: it roosts out of sight.
+  if (!reduced) {
+    const roofOf = k => {
+      let best = null;
+      for (const t of city.querySelectorAll(`[data-i="${k}"] .f-top`)) { const b = t.getBBox(); if (!best || b.y < best.y) best = b; }
+      return best && [best.x + best.width / 2, best.y + best.height / 2];
+    };
+    // on screen, clear of the dissolving edges, and the topmost thing at that point is this roof
+    const seen = (k, [x, y]) => {
+      const p = new DOMPoint(x, y).matrixTransform(city.getScreenCTM()), r = stage.getBoundingClientRect();
+      if (p.x < r.left + 0.18 * r.width || p.x > Math.min(innerWidth, r.right) - 20 || p.y < r.top + 0.2 * r.height || p.y > r.top + 0.72 * r.height) return false;
+      const el = document.elementFromPoint(p.x, p.y);
+      return !!el && el.closest('[data-i]')?.dataset.i === String(k);
+    };
+    const ks = items.map((it, k) => k).filter(k => !items[k].far && !items[k].hero && items[k].cy > HORIZON + 60);
+    const pickRoof = from => {
+      for (let tries = 40; tries--;) {
+        const k = ks[Math.floor(Math.random() * ks.length)], at = roofOf(k);
+        if (!at || !seen(k, at)) continue;
+        const dd = from ? Math.hypot(at[0] - from[0], at[1] - from[1]) : 100;
+        if (dd >= 60 && dd <= 240) return at;
+      }
+      return null;
+    };
+    const spots = [...Array(4 + Math.floor(Math.random() * 3))].map(() => [(Math.random() - 0.5) * 13, (Math.random() - 0.5) * 5]);
+    const flock = glass(pane('#float-top .pigeons'), -24, -14, 48, 28);
+    let at = null;
+    const perch = p => {
+      flock.style.transform = `translate(${n(p[0])}px, ${n(p[1])}px)`;
+      flock.innerHTML = spots.map(([dx, dy], i) => `<g class="perched" transform="translate(${n(dx)} ${n(dy)})${i % 2 ? ' scale(-1 1)' : ''}"><ellipse rx="1.9" ry="1.2"/><circle cx="1.6" cy="-.95" r=".78"/></g>`).join('');
+      flock.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400 });
+    };
+    const hop = () => {
+      const to = !quiet() && (lite ? root.dataset.theme === 'light' : root.dataset.theme !== 'dark') && pickRoof(at);
+      if (!to) return setTimeout(hop, 8000);
+      const from = at, dist = Math.hypot(to[0] - from[0], to[1] - from[1]), lift = 26 + dist * 0.22, dur = 2600 + dist * 22;
+      flock.innerHTML = spots.map(([dx, dy]) => `<g transform="translate(${n(dx * 1.6)} ${n(dy * 2.4)}) scale(1.05)"><path class="bird" style="animation-duration:${n(0.32 + Math.random() * 0.12)}s;animation-delay:-${n(Math.random() * 0.3)}s" d="M-3 -.9Q-1.5 -1.9 0 0Q1.5 -1.9 3 -.9"/></g>`).join('');
+      const path = [...Array(17)].map((_, i) => { const t = i / 16, e = t * t * (3 - 2 * t); return { transform: `translate(${n(from[0] + (to[0] - from[0]) * e)}px, ${n(from[1] + (to[1] - from[1]) * e - lift * 4 * t * (1 - t))}px)` }; });
+      flock.animate(path, { duration: dur, easing: 'linear' }).finished.catch(() => {}).then(() => { at = to; perch(at); setTimeout(hop, 12000 + Math.random() * 22000); });
+    };
+    setTimeout(() => { at = pickRoof(null); if (at) { perch(at); setTimeout(hop, 5000 + Math.random() * 8000); } }, 4000);
+  }
+
+  // ======== easter eggs: each block stands on its own; delete a block to remove its egg ========
+
+  // 1. The founder's window. One window high on the hero (slot kind 'founder', drawn as .lk-founder) stays lit
+  //    from dusk until five; hovering "dkorać" brightens it. Between two and five the crown goes dark, like the
+  //    real Empire State's lights-out, and that window and the beacon keep watch.
+  {
+    const by = document.querySelector('.copy h1 .by a');
+    const hi = on => document.querySelectorAll('.lk-founder').forEach(el => el.classList.toggle('hi', on));
+    for (const [ev, on] of [['mouseenter', true], ['focus', true], ['mouseleave', false], ['blur', false]]) by.addEventListener(ev, () => hi(on));
+    let crownDark = false;
+    const hours = () => {
+      const h = clock();
+      set('DK', h < 5 || h >= 17);
+      const dark = h >= 2 && h < 5;
+      if (dark !== crownDark) { crownDark = dark; homeWas = !dark; set('HOME', !dark); }
+    };
+    hours(); setInterval(hours, 60000);
+  }
+
+  // 2. Three taps on the owl (or typing "hoot") wake the hero: every floor lights from the lobby up, holds for
+  //    twenty seconds, then settles back floor by floor to the way it was. Once a visit.
+  {
+    const heroK = items.findIndex(it => it.hero);
+    let taps = [], typed = '', done = false;
+    function wake() {
+      if (done || heroK < 0) return;
+      done = true;
+      const it = items[heroK], units = it.units.filter(u => u.kind.startsWith('cool') && !u.busy).sort((a, b) => b.y - a.y);
+      const was = units.map(u => ({ on: u.on, show: u.show }));
+      units.forEach(u => { u.busy = true; });
+      homeWas = true; set('HOME', true);
+      units.forEach((u, i) => setTimeout(() => { u.on = true; u.show = u.idx.slice(); u.idx.forEach(j => it.lit.add(j)); paint(heroK, u.idx); }, 90 * i));
+      setTimeout(() => units.forEach((u, i) => setTimeout(() => {
+        const w = was[units.length - 1 - i], gone = u.idx.filter(j => !w.show.includes(j));
+        u.on = w.on; u.show = w.show; gone.forEach(j => it.lit.delete(j)); paint(heroK, u.idx);
+        if (gone.length && !reduced) { const g = ghost(heroK, gone, toneCls(it.key[gone[0]])); g.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, easing: 'ease-out' }).finished.catch(() => {}).then(() => g.remove()); }
+        u.busy = false;
+      }, 140 * i)), 20000 + 90 * units.length);
+    }
+    $('mark').addEventListener('click', () => { const now = Date.now(); taps = taps.filter(t => now - t < 1500).concat(now); if (taps.length >= 3) { taps = []; wake(); } });
+    addEventListener('keydown', e => { if (e.key.length === 1) { typed = (typed + e.key.toLowerCase()).slice(-4); if (typed === 'hoot') wake(); } });
+  }
+
+  // 3. A double tap on any building: its windows light floor by floor from the street up (about a second),
+  //    hold a moment, then go back down the same way. A warm overlay, so the building's own lights are untouched.
+  //    Low buildings get a softer version.
+  hooks.double = k => {
+    const it = items[k];
+    if (!isNight()) return flip(k);
+    if (it.cascading) return;
+    const units = it.units.filter(u => u.kind === 'warm' || u.kind.startsWith('cool'));
+    const rows = [...new Set(units.map(u => Math.round(u.y / 3)))].sort((a, b) => b - a);
+    if (!rows.length) return;
+    it.cascading = true;
+    const soft = rows.length <= 3 ? ' soft' : '', step = reduced ? 0 : 900 / rows.length;
+    const gs = rows.map(r => ghost(k, units.filter(u => Math.round(u.y / 3) === r).flatMap(u => u.idx), 'lk lk-cascade' + soft));
+    rows.forEach((r, i) => setTimeout(() => gs[i].classList.add('lit'), 20 + i * step));
+    rows.forEach((r, i) => setTimeout(() => gs[i].classList.remove('lit'), 1500 + (rows.length - 1 - i) * step));
+    setTimeout(() => { gs.forEach(g => g.remove()); it.cascading = false; }, 2800);
+  };
+
+  // 4. The Chrysler's crown: a tap (or the mouse passing over it) lights its sunburst arches one by one, from
+  //    the lowest tier to the needle; they hold, then fade together.
+  {
+    const k = items.findIndex(it => it.name === 'chrysler');
+    if (k >= 0) {
+      const it = items[k];
+      const ys = it.slots.map(s => center(s.d)[1]), top = Math.min(...ys) + 0.3 * (Math.max(...ys) - Math.min(...ys));
+      const idx = it.slots.map((s, i) => (s.kind === 'warm' && ys[i] < top ? i : -1)).filter(i => i >= 0);
+      const rows = [...new Set(idx.map(i => Math.round(ys[i] / 4)))].sort((a, b) => b - a);
+      let busy = false;
+      const burst = () => {
+        if (busy || !isNight() || !rows.length) return;
+        busy = true;
+        const step = reduced ? 0 : 70;
+        const gs = rows.map(r => ghost(k, idx.filter(i => Math.round(ys[i] / 4) === r), 'lk lk-sunburst'));
+        rows.forEach((r, i) => setTimeout(() => gs[i].classList.add('lit'), 20 + i * step));
+        setTimeout(() => gs.forEach(g => { g.classList.add('off'); g.classList.remove('lit'); }), rows.length * step + 1500);
+        setTimeout(() => { gs.forEach(g => g.remove()); busy = false; }, rows.length * step + 2600);
+      };
+      hooks.tap.push(kk => kk === k && (burst(), true));
+      city.querySelector(`[data-i="${k}"]`).addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') burst(); });
+    }
+  }
+
+  // 5. The Woolworth's Gothic top: a tap lights the windows of its upper stages and warms the copper roof for a
+  //    moment, then it settles.
+  {
+    const k = items.findIndex(it => it.name === 'woolworth');
+    if (k >= 0) {
+      const it = items[k], g = city.querySelector(`[data-i="${k}"]`);
+      const ys = it.slots.map(s => center(s.d)[1]), top = Math.min(...ys) + 0.3 * (Math.max(...ys) - Math.min(...ys));
+      const idx = it.slots.map((s, i) => (s.kind !== 'shop' && ys[i] < top ? i : -1)).filter(i => i >= 0);
+      let busy = false;
+      hooks.tap.push(kk => {
+        if (kk !== k) return false;
+        if (busy || !isNight()) return true;
+        busy = true;
+        const gh = ghost(k, idx, 'lk lk-sunburst');
+        g.classList.add('glow-top');
+        setTimeout(() => gh.classList.add('lit'), 20);
+        setTimeout(() => { gh.classList.add('off'); gh.classList.remove('lit'); g.classList.remove('glow-top'); }, 1800);
+        setTimeout(() => { gh.remove(); busy = false; }, 2900);
+        return true;
+      });
+    }
+  }
+
+  // 6. The city wave: every window in the city warms in a ring spreading from the hero's base (or from under the
+  //    moon), about 3.5s; everything holds lit and breathes twice (4s); then block by block the city goes out past
+  //    its normal state to near dark (4s), only the founder's window, the beacon and the crown left; a still beat
+  //    (2.5s); and the living lights come back one by one (3s). A long press on the hero, three knocks on the
+  //    moon, typing "lights", or midnight with the page open. At most once in thirty seconds.
+  {
+    const heroK = items.findIndex(it => it.hero);
+    let last = 0, typed = '', midnight = -1, knocks = [];
+    const wave = fromMoon => {
+      const now = Date.now();
+      if (!isNight() || now - last < 30000 || city.classList.contains('wave')) return;
+      last = now;
+      city.classList.add('wave'); city.classList.toggle('from-moon', !!fromMoon);
+      if (reduced) { setTimeout(() => city.classList.remove('wave', 'from-moon'), 2000); return; }
+      setTimeout(() => city.classList.add('breathe'), 3600);
+      setTimeout(() => { city.classList.remove('breathe'); city.classList.add('dark'); }, 7600);
+      setTimeout(() => { city.classList.remove('wave', 'dark', 'from-moon'); city.classList.add('reset'); }, 15500);
+      setTimeout(() => city.classList.remove('reset'), 19000);
+    };
+    hooks.hold = k => { if (k === heroK) wave(); };
+    fx.querySelector('.moonhit').addEventListener('pointerup', () => { const now = Date.now(); knocks = knocks.filter(t => now - t < 700).concat(now); if (knocks.length >= 3) { knocks = []; wave(true); } });
+    addEventListener('keydown', e => { if (e.key.length === 1) { typed = (typed + e.key.toLowerCase()).slice(-6); if (typed === 'lights') wave(); } });
+    setInterval(() => { const d = new Date(); if (d.getHours() === 0 && d.getMinutes() === 0 && midnight !== d.getDate()) { midnight = d.getDate(); wave(); } }, 30000);
+  }
+
+  // 7. The city as you left it: ordinary windows and lamps you switched are remembered and restored next time.
+  //    Never the hero, the landmarks, their crowns or the founder's window.
+  {
+    const KEY = 'noctua-iso-city-v2';
+    let mem = { l: [], u: [] };
+    try { localStorage.removeItem('noctua-iso-city'); mem = Object.assign(mem, JSON.parse(localStorage.getItem(KEY)) || {}); } catch {}
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch {} };
+    const xor = (list, key) => { const i = list.indexOf(key); if (i < 0) list.push(key); else list.splice(i, 1); if (list.length > 40) list.shift(); save(); };
+    const plain = it => !(it.hero || it.mood != null);
+    for (const i of mem.l) if (lamps[i]) lamps[i].on = !lamps[i].on;
+    if (mem.l.length) $('lampdots').setAttribute('d', lampPaths());
+    for (const key of mem.u) {
+      const [k, ui] = key.split('.').map(Number), it = items[k], u = it && it.units[ui];
+      if (!u || u.busy || !plain(it)) continue;
+      setNow(it, u, !u.on); paint(k, u.idx);
+    }
+    const flip0 = flip;
+    flip = k => { const u = flip0(k); if (u && plain(items[k])) xor(mem.u, `${k}.${items[k].units.indexOf(u)}`); return u; };
+    city.addEventListener('click', e => { if (e.target.closest('[data-toggle], [data-b]')) return; const l = lamps.indexOf(lastLamp); if (l >= 0) xor(mem.l, l); });
+  }
+
+  // lock the page in place when it fits the screen; a phone held sideways or a short window still scrolls
+  const fit = () => { root.classList.remove('fits'); root.classList.toggle('fits', !wide && document.documentElement.scrollHeight <= innerHeight + 1); };
+  fit(); addEventListener('resize', fit);
+  syncGlass(); addEventListener('resize', syncGlass); document.fonts.ready.then(syncGlass);
+  new IntersectionObserver(([e]) => { away = !e.isIntersecting; root.classList.toggle('still', away); }).observe(document.querySelector('.stage'));
+
+  // ---- arrival: once the type is in (or 0.9s has passed) the page fades up ----
+  if (root.classList.contains('arrive')) Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 900))]).then(() => requestAnimationFrame(() => root.classList.remove('arrive')));
+})();
+</script>
 </body>
 </html>

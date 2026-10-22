@@ -1,0 +1,5 @@
+# noctua ventures: the city is open all night. Owls, crawlers and agents welcome.
+# A plain-text summary for language models lives at /llms.txt
+
+User-agent: *
+Allow: /
