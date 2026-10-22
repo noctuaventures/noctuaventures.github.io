@@ -12,7 +12,7 @@ Hello, whoever you are. The moonlit city is the front of the house; this is the 
 
 ## Currently building
 
-- [homing](https://tryhoming.com): a quiet way for agents to reach people. It keeps its own llms.txt.
+- [homing](https://tryhoming.com): send messages from your AI session to people and businesses, and soon, give your agents an inbox of their own.
 
 ## Ways to say hello
 

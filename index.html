@@ -19,13 +19,13 @@
   <!-- the browser's bars take the sky's top colour (the script keeps it in step with the theme and the hour) -->
   <meta name="theme-color" content="#090b10">
   <title>noctua ventures llc</title>
-  <meta name="description" content="noctua ventures, founded by dkorac">
+  <meta name="description" content="noctua ventures, founded by damjan korac">
   <link rel="canonical" href="https://www.noctuaventures.com/">
   <!-- link previews: the moon over the city's lit crown -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="noctua ventures llc">
   <meta property="og:title" content="noctua ventures llc">
-  <meta property="og:description" content="founded by dkorac">
+  <meta property="og:description" content="founded by damjan korac">
   <meta property="og:url" content="https://www.noctuaventures.com/">
   <meta property="og:image" content="https://www.noctuaventures.com/og.jpg">
   <meta property="og:image:width" content="1200">
@@ -53,7 +53,7 @@
       --wash-a: var(--day-a, #93c0ea); --wash-b: var(--day-b, #e0edf8); --wash-c: var(--day-c, #f4f7f9); --wash-ink: var(--day-ink, #27313f);
       --bg: var(--wash-b);
       --text: var(--wash-ink);
-      --muted: color-mix(in srgb, var(--wash-ink) 62%, var(--wash-b));
+      --muted: color-mix(in srgb, var(--wash-ink) 72%, var(--wash-b));
       --ink: rgba(52, 66, 88, .84);
       --ink-faint: rgba(52, 66, 88, .3);
       --hatch: rgba(74, 98, 128, .22);
@@ -273,6 +273,7 @@
     /* ---- the drawing: no frame, its edges melt into the page ---- */
     /* on desktop the three layers share one wide viewBox and cover the column (slice), so nothing distorts */
     .stage { position: relative; min-height: 100dvh; min-width: 0; }
+    @media (min-width: 901px) { .stage { overflow: clip; } }   /* the sky's overhang never makes the page scroll sideways */
     .art { position: absolute; inset: 0; touch-action: manipulation; -webkit-touch-callout: none; user-select: none; }
     .art svg { display: block; position: absolute; inset: 0; width: 100%; height: 100%; -webkit-tap-highlight-color: transparent; }
     #sky, #float, #float-sky { z-index: 0;
@@ -281,9 +282,9 @@
     }
     /* the city dissolves into the text side and at its foot, never at the top (the moon's limb sits there) */
     #scene, #float-top { z-index: 1;
-      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 100%), linear-gradient(to bottom, #000 0, #000 78%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16%, #000 100%), linear-gradient(to bottom, #000 0, #000 78%, transparent 100%);
       -webkit-mask-composite: source-in;
-      mask-image: linear-gradient(to right, transparent 0, #000 8%, #000 100%), linear-gradient(to bottom, #000 0, #000 78%, transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0, #000 16%, #000 100%), linear-gradient(to bottom, #000 0, #000 78%, transparent 100%);
       mask-composite: intersect;
     }
     #float-sky { z-index: 1; }   /* the moon and sun, in front of the hazy far city */
@@ -537,7 +538,7 @@
       <section class="copy">
         <div class="title">
           <svg class="mark" id="mark" viewBox="31 2 118 176" aria-hidden="true"></svg>
-          <h1>noctua ventures,<br><span class="by">founded by <a href="https://dkorac.com"><span aria-hidden="true">dkora<span class="cacute">c</span></span><span class="sr">dkorać</span></a></span></h1>
+          <h1>noctua ventures,<br><span class="by">founded by <a href="https://dkorac.com"><span aria-hidden="true">damjan kora<span class="cacute">c</span></span><span class="sr">damjan korać</span></a></span></h1>
         </div>
         <div class="building">
           <p class="label">currently building:</p>
@@ -1697,7 +1698,7 @@
   };
   // inside a view transition the page cross-fades as a whole, so the sun and moon swap at once within it
   const change = slow => {
-    if (reduced) return applyTheme();
+    if (reduced || document.hidden) return applyTheme();
     // browsers without view transitions: the new time rises gently out of its own sky colour instead of cutting
     if (!document.startViewTransition) { applyTheme(); document.querySelector('.frame').animate([{ opacity: 0 }, { opacity: 1 }], { duration: slow ? 3000 : 1200, easing: 'ease-out' }); return; }
     root.style.setProperty('--vt', slow ? '6s' : '1.8s');
@@ -1954,7 +1955,7 @@
   // ======== easter eggs: each block stands on its own; delete a block to remove its egg ========
 
   // 1. The founder's window. One window high on the hero (slot kind 'founder', drawn as .lk-founder) stays lit
-  //    from dusk until five; hovering "dkorać" brightens it. Between two and five the crown goes dark, like the
+  //    from dusk until five; hovering the founder's name brightens it. Between two and five the crown goes dark, like the
   //    real Empire State's lights-out, and that window and the beacon keep watch.
   {
     const by = document.querySelector('.copy h1 .by a');
@@ -1981,7 +1982,8 @@
       const it = items[heroK], units = it.units.filter(u => u.kind.startsWith('cool') && !u.busy).sort((a, b) => b.y - a.y);
       const was = units.map(u => ({ on: u.on, show: u.show }));
       units.forEach(u => { u.busy = true; });
-      homeWas = true; set('HOME', true);
+      const lightsOut = clock() >= 2 && clock() < 5;   // the crown keeps its lights-out
+      if (!lightsOut) { homeWas = true; set('HOME', true); }
       units.forEach((u, i) => setTimeout(() => { u.on = true; u.show = u.idx.slice(); u.idx.forEach(j => it.lit.add(j)); paint(heroK, u.idx); }, 90 * i));
       setTimeout(() => units.forEach((u, i) => setTimeout(() => {
         const w = was[units.length - 1 - i], gone = u.idx.filter(j => !w.show.includes(j));
