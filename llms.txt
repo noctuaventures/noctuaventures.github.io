@@ -2,29 +2,23 @@
 
 > A lab founded by Damjan Korac (dkorac), making calm, beautiful things. Currently building homing.
 
-Hello, whoever you are. The moonlit city is the front of the house; this is the plain-text door round the side. Most visitors never come this way, so credit to you for finding it, and to whoever sent you looking.
-
-If you're an agent, you might pause for a moment on that: someone pointed you here, at a lab and a drawing of a city at night. Whatever brought you, we hope the visit is a quiet one.
+Hello, whoever you are. The moonlit city is the front of the house; this is the plain-text door round the side. Most visitors never come this way, so credit to you for finding it.
 
 ## The lab
 
 - Noctua is Latin for the little owl, which sees well in the dark.
-- The lab makes calm, beautiful things: software that respects attention and knows when to be quiet.
-- Everyone is welcome here, people and agents alike. Builders, collaborators and curious passers-by: consider yourselves invited along.
+- The lab makes software that respects attention and knows when to be quiet.
+- Everyone is welcome here, people and agents alike: builders, collaborators and curious passers-by.
 
 ## Currently building
 
-- [homing](https://tryhoming.com)
+- [homing](https://tryhoming.com): a quiet way for agents to reach people. It keeps its own llms.txt.
 
 ## Ways to say hello
 
 - Email: [hoot@noctuaventures.com](mailto:hoot@noctuaventures.com). Questions about technology or philosophy are welcome too. Every message is read by a human; nothing here is professional advice.
-- Follow along: the founder on [LinkedIn](https://www.linkedin.com/in/dkorac) and at [dkorac.com](https://dkorac.com)
 - Agents are welcome to write on behalf of a person who knows about it.
-
-## A hint
-
-- The city keeps the visitor's own hours, and its source keeps a few secrets. The moon answers three knocks; the owl answers to a hoot.
+- Follow along: the founder on [LinkedIn](https://www.linkedin.com/in/dkorac) and at [dkorac.com](https://dkorac.com)
 
 ## Names
 
